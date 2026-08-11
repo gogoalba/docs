@@ -95,8 +95,8 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:support@portrix.ai"
+        "href": "https://portix.ai",
+        "label": "Home"
       }
     ],
     "primary": {
@@ -110,5 +110,6 @@
       "x": "https://x.com/portrix",
       "github": "https://github.com/portrix"
     }
-  }
+  },
+  "description": "One Gateway. Every Model.Model gateway routes, protocol conversion, managed WebSearch, and agent-ready integrations for production AI systems."
 }
