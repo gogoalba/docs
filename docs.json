@@ -17,7 +17,73 @@
         }
       ]
     },
-    "groups": []
+    "languages": [
+      {
+        "language": "en",
+        "pages": [
+          "Platform/untitled-page",
+          "Platform/quick-start",
+          "Platform/use-cases"
+        ]
+      },
+      {
+        "language": "cn",
+        "pages": [
+          "Gateway API/overview",
+          "Gateway API/list-models",
+          "Gateway API/errors",
+          "Gateway API/routing-and-protocols",
+          "Gateway API/rate-limits",
+          {
+            "group": "OpenAI",
+            "pages": [
+              "Gateway API/OpenAI/chat-completions",
+              "Gateway API/OpenAI/overview",
+              "Gateway API/OpenAI/responses"
+            ]
+          },
+          {
+            "group": "Anthropic",
+            "pages": [
+              "Gateway API/Anthropic/messages",
+              "Gateway API/Anthropic/overview",
+              "Gateway API/Anthropic/tool-use"
+            ]
+          },
+          {
+            "group": "Gemini",
+            "pages": [
+              "Gateway API/Gemini/generate-content",
+              "Gateway API/Gemini/overview"
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh",
+        "pages": [
+          "WebSearch/overview"
+        ]
+      },
+      {
+        "language": "zh-Hans",
+        "groups": [
+          {
+            "group": "网关API",
+            "pages": [
+              "index-zh/网关API/pipe-llm-pipe-llm-converter-api-converter-open-ai-chat-completions-v1-chat-completions-openai-v1-chat-completions-open-ai-open-ai-anthropic-gemini-converter-open-ai-responses-v1-responses-open-ai"
+            ]
+          },
+          {
+            "group": "Portix平台",
+            "pages": [
+              "index-zh/Portix平台/untitled-page-2",
+              "index-zh/Portix平台/untitled-page"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "navbar": {
     "links": [
