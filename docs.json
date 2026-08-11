@@ -16,7 +16,7 @@
           {
             "group": "Platform",
             "pages": [
-              "Platform/untitled-page",
+              "Platform/core-platform",
               "Platform/quick-start",
               "Platform/use-cases"
             ]
@@ -84,16 +84,10 @@
     ]
   },
   "navbar": {
-    "links": [
-      {
-        "href": "https://portix.ai",
-        "label": "Home"
-      }
-    ],
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "https://app.portrix.ai"
+      "href": "https://portix.ai/dashboard/overview"
     }
   },
   "footer": {
