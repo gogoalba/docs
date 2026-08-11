@@ -31,7 +31,7 @@ Same as text models:
     ```bash
     curl -s -X POST \
       "https://api.portix.ai/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent" \
-      -H "x-goog-api-key: $PIPELLM_API_KEY" \
+      -H "x-goog-api-key: $YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d @- << 'EOF'
     {
@@ -51,7 +51,7 @@ Same as text models:
     from PIL import Image
     
     client = genai.Client(
-    api_key=os.getenv('PIPELLM_API_KEY'),
+    api_key=os.getenv('YOUR_API_KEY'),
     http_options={'base_url': 'https://api.portix.ai'}
     )
     
@@ -75,7 +75,7 @@ Same as text models:
     import * as fs from "node:fs";
     
     const ai = new GoogleGenAI({
-      apiKey: process.env.PIPELLM_API_KEY,
+      apiKey: process.env.YOUR_API_KEY,
       httpOptions: { baseUrl: 'https://api.portix.ai' }
     });
     
@@ -107,7 +107,7 @@ Upload a reference image and generate a new one with text prompts:
     
     curl -s -X POST \
      "https://api.portix.ai/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent" \
-     -H "x-goog-api-key: $PIPELLM_API_KEY" \
+     -H "x-goog-api-key: $YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d @- << EOF
     {
@@ -134,7 +134,7 @@ Upload a reference image and generate a new one with text prompts:
     from PIL import Image
     
     client = genai.Client(
-      api_key=os.getenv('PIPELLM_API_KEY'),
+      api_key=os.getenv('YOUR_API_KEY'),
       http_options={'base_url': 'https://api.portix.ai'}
     )
     
@@ -162,7 +162,7 @@ Upload a reference image and generate a new one with text prompts:
     import * as fs from "node:fs";
     
     const ai = new GoogleGenAI({
-    apiKey: process.env.PIPELLM_API_KEY,
+    apiKey: process.env.YOUR_API_KEY,
     httpOptions: { baseUrl: 'https://api.portix.ai' }
     });
     

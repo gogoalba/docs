@@ -53,7 +53,7 @@ Portix provides **native protocol conversion** at the gateway level. Your existi
     from openai import OpenAI
     
     client = OpenAI(
-        api_key="your-portix-key",
+        api_key="YOUR_API_KEY",
         base_url="https://api.portix.ai/openai/v1"  # ← just change this
     )
     
@@ -69,7 +69,7 @@ Portix provides **native protocol conversion** at the gateway level. Your existi
     import anthropic
     
     client = anthropic.Anthropic(
-        api_key="your-portix-key",
+        api_key="YOUR_API_KEY",
         base_url="https://api.portix.ai/anthropic"  # ← just change this
     )
     
@@ -86,7 +86,7 @@ Portix provides **native protocol conversion** at the gateway level. Your existi
     from google import genai
     
     client = genai.Client(
-        api_key="your-portix-key",
+        api_key="YOUR_API_KEY",
         http_options={"base_url": "https://api.portix.ai/gemini"}  # ← just change this
     )
     
