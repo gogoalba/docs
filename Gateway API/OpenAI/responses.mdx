@@ -1,0 +1,100 @@
+---
+title: "Responses"
+---
+
+OpenAI-compatible Responses API on PipeLLM
+
+## Endpoint
+
+```text
+POST https://api.portix.ai/v1/responses
+```
+
+<Note>
+  This free route accepts OpenAI Responses requests and routes only to OpenAI-compatible platforms. Cross-protocol routing for the Responses API is not available yet. If you need cross-protocol routing today, use the OpenAI Format Converter with Chat Completions.
+</Note>
+
+## Code Examples
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl https://api.portix.ai/v1/responses \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $YOUR_API_KEY" \
+      -d '{
+        "model": "gpt-4.1",
+        "input": "Write a one-sentence explanation of why the sky is blue."
+      }'
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```python
+    import os
+    from openai import OpenAI
+    
+    client = OpenAI(
+      api_key=os.getenv("YOUR_API_KEY"),
+      base_url="https://api.portix.ai/v1"
+    )
+    
+    response = client.responses.create(
+      model="gpt-4.1",
+      input="Write a one-sentence explanation of why the sky is blue."
+    )
+    
+    print(response.output_text)
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript
+    import OpenAI from "openai";
+    
+    const client = new OpenAI({
+      apiKey: process.env.YOUR_API_KEY,
+      baseURL: "https://api.portix.ai/v1",
+    });
+    
+    const response = await client.responses.create({
+      model: "gpt-4.1",
+      input: "Write a one-sentence explanation of why the sky is blue.",
+    });
+    
+    console.log(response.output_text);
+    ```
+  </Tab>
+</Tabs>
+
+## Common Request Fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `model` | string | Yes | OpenAI-compatible model ID |
+| `input` | string or array | Yes | Text or structured input items |
+| `instructions` | string | No | Developer or system instruction |
+| `stream` | boolean | No | Enable streaming output |
+| `tools` | array | No | Built-in or custom tools |
+| `temperature` | number | No | Sampling temperature |
+| `max_output_tokens` | integer | No | Maximum output tokens |
+
+## Response Shape
+
+```json
+{
+  "id": "resp_123",
+  "object": "response",
+  "model": "gpt-4.1",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "The atmosphere scatters blue light more strongly than red light."
+        }
+      ]
+    }
+  ]
+}
+```

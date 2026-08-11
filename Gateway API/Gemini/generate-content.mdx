@@ -1,0 +1,148 @@
+---
+title: "Generate Content"
+---
+
+Gemini-compatible generateContent API on PipeLLM
+
+## Endpoint
+
+```text
+POST https://api.portix.ai/v1beta/models/{model}:generateContent
+```
+
+<Note>
+  This free route accepts Gemini native requests and routes only to Gemini platforms. To keep the Gemini format while calling OpenAI or Anthropic models, use the Gemini Format Converter.
+</Note>
+
+## Install SDK
+
+```bash
+pip install google-genai
+```
+
+## Code Examples
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl "https://api.portix.ai/v1beta/models/gemini-3-flash-preview:generateContent" \
+      -H "Content-Type: application/json" \
+      -H "x-goog-api-key: $YOUR_API_KEY" \
+      -d '{
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {"text": "Why is the sky blue?"}
+            ]
+          }
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```python
+    import os
+    from google import genai
+    
+    client = genai.Client(
+      api_key=os.getenv('YOUR_API_KEY'),
+      http_options={'base_url': 'https://api.portix.ai'}
+    )
+    
+    response = client.models.generate_content(
+      model='gemini-3-flash-preview',
+      contents='Why is the sky blue?'
+    )
+    
+    print(response.text)
+    ```
+  </Tab>
+  <Tab title="Node.js">
+    ```javascript
+    import { GoogleGenAI } from '@google/genai';
+    
+    const ai = new GoogleGenAI({
+      apiKey: process.env.YOUR_API_KEY,
+      httpOptions: {
+        baseUrl: 'https://api.portix.ai'
+      }
+    });
+    
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: 'Why is the sky blue?'
+    });
+    
+    console.log(response.text);
+    ```
+  </Tab>
+  <Tab title="Go">
+    ```go
+    package main
+    
+    import (
+      "context"
+      "os"
+      "github.com/google/generative-ai-go/genai"
+      "google.golang.org/api/option"
+    )
+    
+    func main() {
+      ctx := context.Background()
+      client, _ := genai.NewClient(ctx,
+        option.WithAPIKey(os.Getenv("YOUR_API_KEY")),
+        option.WithEndpoint("https://api.portix.ai"),
+      )
+      defer client.Close()
+    
+      model := client.GenerativeModel("gemini-3-flash-preview")
+      resp, _ := model.GenerateContent(ctx,
+        genai.Text("Why is the sky blue?"),
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Request Format
+
+```json
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [
+        {"text": "Your message here"}
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 1024
+  }
+}
+```
+
+## Response Format
+
+```json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {"text": "The sky appears blue because..."}
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP"
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 10,
+    "candidatesTokenCount": 50,
+    "totalTokenCount": 60
+  }
+}
+```

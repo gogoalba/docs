@@ -1,0 +1,64 @@
+---
+title: "Overview"
+---
+
+WebSearch is a standalone product surface for real-time search, retrieval, and page reading. It can be used directly through Portix's public API or installed as the `portix-websearch` npm package for OpenClaw.
+
+## What WebSearch Includes
+
+| Surface | What it is for |
+| --- | --- |
+| Search API | Call Portix WebSearch over HTTP from your app or backend |
+| npm package | Install Portix WebSearch as an OpenClaw plugin from npm |
+
+## Core Capabilities
+
+- real-time web search through Portix-managed retrieval
+- optional rich page context in search results
+- page reading and news-search tools through the OpenClaw plugin
+- per-request billing with the same Portix API key used across your account
+
+## Authentication
+
+Use the same Portix API key you use for the rest of the platform:
+
+```text
+Authorization: Bearer $YOUR_API_KEY
+```
+
+## Public Routes
+
+PipeLLM Gateway currently exposes four public WebSearch routes:
+
+| Route | Purpose | Query parameter |
+| --- | --- | --- |
+| `GET /v1/websearch/search` | Deep search with retrieval and reranking | `q` |
+| `GET /v1/websearch/simple-search` | Fast search snippets without RAG enrichment | `q` |
+| `GET /v1/websearch/reader` | Read a page and return clean text | `url` |
+| `GET /v1/websearch/search-news` | News search with retrieval and reranking | `q` |
+
+These routes are proxy endpoints on the public gateway and map to the internal WebSearch service allowlist.
+
+## Pricing
+
+Current WebSearch pricing is billed per successful request:
+
+| Item | Price |
+| --- | --- |
+| Deep search | \$0.08 |
+| Simple search | \$0.01 |
+| Web reader | \$0.01 |
+| News search | \$0.08 |
+
+<Note>
+  WebSearch requests share your account-level authentication and are billed as a separate product surface from model generation endpoints.
+</Note>
+
+## Route Matrix
+
+| Public route | Internal service route | Notes |
+| --- | --- | --- |
+| `/v1/websearch/search` | `/api/search` | Full search \+ content extraction \+ rerank |
+| `/v1/websearch/simple-search` | `/api/simple-search` | Serper search only |
+| `/v1/websearch/reader` | `/api/reader` | Read one page by URL |
+| `/v1/websearch/search-news` | `/api/search-news` | News search \+ content extraction \+ rerank |

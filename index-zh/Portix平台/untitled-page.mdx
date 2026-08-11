@@ -1,0 +1,133 @@
+---
+title: "Portix平台"
+---
+
+**Portix 是一层面向生产 AI 系统的基础设施。** 你可以先从模型网关开始，再接入 WebSearch 这类托管工具，以及团队已经在使用的 Agent 框架和编码助手。
+
+## 平台能力入口
+
+<Columns cols={3}>
+  <Card title="网关 API" icon="route" href="/api-reference/introduction.zh">
+    用统一网关做模型路由、协议兼容和提供商接入。
+  </Card>
+
+  <Card title="托管工具" icon="globe" href="/websearch/overview.zh">
+    给 Agent 工作流接入 WebSearch 和检索能力。
+  </Card>
+
+  <Card title="Agent 集成" icon="terminal" href="/integrations/overview.zh">
+    把 Claude Code、OpenClaw、OpenCode 和 LangChain 接到 PipeLLM。
+  </Card>
+</Columns>
+
+## 痛点
+
+每个 AI 厂商都有自己的 SDK、API 格式和鉴权方式。在 OpenAI、Anthropic、Gemini 之间切换意味着重写集成代码、管理多套 API Key、承受厂商锁定的风险。
+
+## 网关兼容层
+
+Portix 在网关层提供**原生协议转换**。你现有的代码原封不动 —— 只需改一个 Base URL。
+
+<Columns cols={3}>
+  <Card title="用 OpenAI SDK" icon="arrow-right-arrow-left">
+    直接调用 Claude、Gemini、DeepSeek、Llama 等 —— 通过你已经熟悉的 OpenAI SDK。
+  </Card>
+
+  <Card title="用 Anthropic SDK" icon="arrow-right-arrow-left">
+    直接调用 GPT、Gemini、Grok、DeepSeek 等 —— 通过你已经熟悉的 Anthropic SDK。
+  </Card>
+
+  <Card title="用 Gemini SDK" icon="arrow-right-arrow-left">
+    直接调用 GPT、Claude、DeepSeek 等 —— 通过你已经熟悉的 Gemini SDK。
+  </Card>
+</Columns>
+
+<Tabs>
+  <Tab title="OpenAI SDK → Claude">
+    ```python
+    # 用 OpenAI SDK 调用 Claude
+    from openai import OpenAI
+    
+    client = OpenAI(
+        api_key="YOUR_API_KEY",
+        base_url="https://api.portix.ai/openai/v1"  # ← 只改这一行
+    )
+    
+    response = client.chat.completions.create(
+        model="claude-sonnet-4-6",  # ← 用任意模型
+        messages=[{"role": "user", "content": "你好！"}]
+    )
+    ```
+  </Tab>
+  <Tab title="Anthropic SDK → Gemini">
+    ```python
+    # 用 Anthropic SDK 调用 Gemini
+    import anthropic
+    
+    client = anthropic.Anthropic(
+        api_key="YOUR_API_KEY",
+        base_url="https://api.portix.ai/anthropic"  # ← 只改这一行
+    )
+    
+    message = client.messages.create(
+        model="gemini-3-flash-preview",  # ← 用任意模型
+        max_tokens=1024,
+        messages=[{"role": "user", "content": "你好！"}]
+    )
+    ```
+  </Tab>
+  <Tab title="Gemini SDK → GPT">
+    ```python
+    # 用 Gemini SDK 调用 GPT
+    from google import genai
+    
+    client = genai.Client(
+        api_key="YOUR_API_KEY",
+        http_options={"base_url": "https://api.portix.ai/gemini"}  # ← 只改这一行
+    )
+    
+    response = client.models.generate_content(
+        model="gpt-5.4",  # ← 用任意模型
+        contents="你好！"
+    )
+    ```
+  </Tab>
+</Tabs>
+
+## 谁需要 PipeLLM
+
+<Columns cols={2}>
+  <Card title="初创团队 & 开发者" icon="rocket">
+    **几分钟内评估和切换模型，而不是几周。** 用现有代码同时对比 GPT、Claude、Gemini、DeepSeek。无需 SDK 迁移、无需新的鉴权流程 —— 换个模型名就行。
+  </Card>
+
+  <Card title="大型企业" icon="building">
+    **在现有系统上接入最新 AI 能力，无需重写代码。** 你基于 OpenAI SDK 构建的生产系统可以立即访问 Claude 或 Gemini。零迁移成本，完整协议兼容。
+  </Card>
+</Columns>
+
+## 你将获得
+
+- **通用 SDK 兼容** —— OpenAI、Anthropic、Gemini SDK 可互换使用，访问 50\+ 模型
+- **原生协议转换** —— 不是简单代理：完整的请求/响应格式转换，支持流式、工具调用、视觉和思维链
+- **企业级路由** —— 高并发网关，自动故障转移和负载均衡
+- **托管工具能力** —— 通过统一账号接入 WebSearch 等独立工具能力
+- **面向 Agent 的集成** —— 让现有的编码助手与框架通过 Portix 路由运行
+- **零厂商锁定** —— 改一行代码就能切换供应商，集成代码完全不变
+- **按量付费** —— 无订阅、无最低消费，用多少付多少
+
+## 支持的模型提供商
+
+<Columns cols={3}>
+  <Card title="OpenAI 通用" href="/api-reference/openai/overview.zh">
+    GPT 系列、Grok 系列、GLM 系列、DeepSeek 系列
+  </Card>
+
+  <Card title="Anthropic" href="/api-reference/anthropic/overview.zh">
+    Opus 系列、Sonnet 系列、Haiku 系列
+  </Card>
+
+  <Card title="Gemini" href="/api-reference/gemini/overview.zh">
+    Gemini 3 系列、2.5 系列、2.0 系列
+  </Card>
+</Columns>

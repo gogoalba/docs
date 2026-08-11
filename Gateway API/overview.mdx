@@ -1,0 +1,53 @@
+---
+title: "Overview"
+---
+
+Portix exposes native public routes and converter routes. Use this section when you need the exact path, headers, request format, error behavior, and rate limit rules for Portix's public API.
+
+## Public Endpoint Families
+
+| Request format | Native route | Converter route | Use this when |
+| --- | --- | --- | --- |
+| OpenAI Chat Completions | `/v1/chat/completions` | `/openai/v1/chat/completions` | Use the native route for OpenAI-compatible platforms. Use the converter route to keep OpenAI format while calling Anthropic or Gemini models. |
+| OpenAI Responses | `/v1/responses` | Not available yet | Use the native route for OpenAI-compatible platforms. For cross-protocol calls today, use the OpenAI Chat Completions converter instead. |
+| Anthropic Messages | `/v1/messages` | `/anthropic/v1/messages` | Use the native route for Anthropic-compatible platforms. Use the converter route to keep Anthropic format while calling OpenAI or Gemini models. |
+| Gemini Generate Content | `/v1beta/models/{model}:generateContent` | `/gemini/v1beta/models/{model}:generateContent` | Use the native route for Gemini platforms. Use the converter route to keep Gemini format while calling OpenAI or Anthropic models. |
+
+## Authentication
+
+All public routes use your Portix API key with protocol-specific headers:
+
+| API Format | Header |
+| --- | --- |
+| OpenAI Compatible | `Authorization: Bearer $PIPELLM_API_KEY` |
+| Anthropic | `x-api-key: $PIPELLM_API_KEY` |
+| Gemini | `x-goog-api-key: $PIPELLM_API_KEY` |
+
+## Base URLs
+
+| Route type | Base URL |
+| --- | --- |
+| Native public routes | `https://api.portix.ai` |
+| OpenAI converter | `https://api.portix.ai/openai/v1` |
+| Anthropic converter | `https://api.portix.ai/anthropic` |
+| Gemini converter | `https://api.portix.ai/gemini` |
+
+## Start Here
+
+<Columns cols={2}>
+  <Card title="List Models" icon="list" href="/api-reference/list-models">
+    Discover the model IDs available to your account
+  </Card>
+
+  <Card title="Routing & Protocols" icon="route" href="/guides/routing-protocols">
+    Choose the correct free route or converter route
+  </Card>
+
+  <Card title="Errors" icon="triangle-exclamation" href="/guides/errors">
+    Understand error types, status codes, and retry behavior
+  </Card>
+
+  <Card title="Rate Limits" icon="gauge" href="/guides/rate-limits">
+    Review request limits, balance protection, and headers
+  </Card>
+</Columns>

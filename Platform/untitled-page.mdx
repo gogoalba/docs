@@ -1,0 +1,121 @@
+---
+title: "Core Platform"
+---
+
+# Portix — One Gateway. Every Model.
+
+> Model gateway routes, protocol conversion, managed WebSearch, and agent-ready integrations for production AI systems.
+
+**Portix** is a platform that gives developers access to hundreds of large language models through a single API. Instead of maintaining separate integrations for OpenAI, Anthropic, Mistral, Google, and dozens of other AI companies, and juggling between them, we connect to one endpoint, authenticate once, and get access to more than 400 models.
+
+## Platform Surfaces
+
+<Columns cols={3}>
+  <Card title="Gateway API" icon="route" href="/api-reference/introduction">
+    Use one gateway layer for provider routing, protocol compatibility, and model access.
+  </Card>
+
+  <Card title="Managed Tools" icon="globe" href="/websearch/overview">
+    Add WebSearch and retrieval surfaces that work well inside agent workflows.
+  </Card>
+
+  <Card title="Agent Integrations" icon="terminal" href="/integrations/overview">
+    Connect Claude Code, OpenClaw, OpenCode, and LangChain to portix.
+  </Card>
+</Columns>
+
+## The Problem
+
+Every AI provider has its own SDK, API format, and authentication method. Switching between OpenAI, Anthropic, and Gemini means rewriting integration code, managing multiple API keys, and risking vendor lock-in.
+
+## Gateway Compatibility
+
+Portix provides **native protocol conversion** at the gateway level. Your existing code works as-is — just change the base URL.
+
+<Columns cols={3}>
+  <Card title="Use OpenAI SDK" icon="arrow-right-arrow-left">
+    Call Claude, Gemini, DeepSeek, Llama and more — all through the OpenAI SDK you already know.
+  </Card>
+
+  <Card title="Use Anthropic SDK" icon="arrow-right-arrow-left">
+    Call GPT, Gemini, Grok, DeepSeek and more — all through the Anthropic SDK you already know.
+  </Card>
+
+  <Card title="Use Gemini SDK" icon="arrow-right-arrow-left">
+    Call GPT, Claude, DeepSeek and more — all through the Gemini SDK you already know.
+  </Card>
+</Columns>
+
+<Tabs>
+  <Tab title="OpenAI SDK → Claude">
+    ```python
+    # Call Claude using OpenAI SDK
+    from openai import OpenAI
+    
+    client = OpenAI(
+        api_key="your-portix-key",
+        base_url="https://api.portix.ai/openai/v1"  # ← just change this
+    )
+    
+    response = client.chat.completions.create(
+        model="claude-sonnet-5",  # ← use any model
+        messages=[{"role": "user", "content": "Hello!"}]
+    )
+    ```
+  </Tab>
+  <Tab title="Anthropic SDK → Gemini">
+    ```python
+    # Call Gemini using Anthropic SDK
+    import anthropic
+    
+    client = anthropic.Anthropic(
+        api_key="your-portix-key",
+        base_url="https://api.portix.ai/anthropic"  # ← just change this
+    )
+    
+    message = client.messages.create(
+        model="gemini-3.6-flash",  # ← use any model
+        max_tokens=1024,
+        messages=[{"role": "user", "content": "Hello!"}]
+    )
+    ```
+  </Tab>
+  <Tab title="Gemini SDK → GPT">
+    ```python
+    # Call GPT using Gemini SDK
+    from google import genai
+    
+    client = genai.Client(
+        api_key="your-portix-key",
+        http_options={"base_url": "https://api.portix.ai/gemini"}  # ← just change this
+    )
+    
+    response = client.models.generate_content(
+        model="gpt-5.5",  # ← use any model
+        contents="Hello!"
+    )
+    ```
+  </Tab>
+</Tabs>
+
+## Who Is Portix For
+
+<Columns cols={2}>
+  <Card title="Startups & Dev Teams" icon="rocket">
+    **Evaluate and switch models in minutes, not weeks.** Test GPT, Claude, Gemini, DeepSeek side-by-side with your existing codebase. No SDK migrations, no new auth flows — just swap the model name.
+  </Card>
+
+  <Card title="Enterprises" icon="building">
+    **Add latest AI capabilities to legacy systems without rewriting code.** Your production integrations built on OpenAI SDK can instantly access Claude or Gemini. Zero migration cost, full protocol compatibility.
+  </Card>
+</Columns>
+
+## What You Get
+
+- **Universal SDK Compatibility** — Use OpenAI, Anthropic, or Gemini SDK interchangeably to access 50\+ models
+- **Native Protocol Conversion** — Not a simple proxy; full request/response format translation with streaming, tool use, vision, and thinking support
+- **Enterprise-Grade Routing** — High-concurrency gateway with automatic failover and load balancing
+- **Managed Tool Surfaces** — Add WebSearch and retrieval routes without building a separate tool service
+- **Agent-Ready Integrations** — Plug existing coding agents and frameworks into PipeLLM-compatible routes
+- **Zero Vendor Lock-In** — Switch providers by changing one line; your integration code stays the same
+- **Pay As You Go** — No subscriptions, no minimums, only pay for what you use

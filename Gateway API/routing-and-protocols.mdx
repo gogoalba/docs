@@ -1,0 +1,59 @@
+---
+title: "Routing & Protocols"
+---
+
+Portix exposes two kinds of public routes:
+
+- Native public routes on `https://api.portix.ai`
+- Converter routes under `/openai`, `/anthropic`, and `/gemini`
+
+Use a native route only when your request already matches the target protocol. Use a converter route when you want to keep one SDK format and call models from another protocol family.
+
+## Route Matrix
+
+| Request format | Native route | Converter route | Notes |
+| --- | --- | --- | --- |
+| OpenAI Chat Completions | `/v1/chat/completions` | `/openai/v1/chat/completions` | Native route for OpenAI-compatible platforms. Converter route for Anthropic or Gemini models with OpenAI format. |
+| OpenAI Responses | `/v1/responses` | Not available yet | Native route for OpenAI-compatible platforms only. For cross-protocol calls today, use the OpenAI Chat Completions converter. |
+| Anthropic Messages | `/v1/messages` | `/anthropic/v1/messages` | Native route for Anthropic-compatible platforms. Converter route for OpenAI or Gemini models with Anthropic format. |
+| Gemini Generate Content | `/v1beta/models/{model}:generateContent` | `/gemini/v1beta/models/{model}:generateContent` | Native route for Gemini platforms. Converter route for OpenAI or Anthropic models with Gemini format. |
+| Gemini Stream Generate Content | `/v1beta/models/{model}:streamGenerateContent` | `/gemini/v1beta/models/{model}:streamGenerateContent` | Same routing rule as `generateContent`. |
+
+## Protocol Guard Rules
+
+- `/v1/chat/completions` and `/v1/responses` accept OpenAI-compatible request bodies and route only to OpenAI-compatible platforms.
+- `/v1/messages` accepts Anthropic Messages request bodies and routes only to Anthropic-compatible platforms.
+- Gemini native endpoints accept Gemini request bodies and route only to Gemini platforms.
+- Converter-prefixed routes such as `/openai/...`, `/anthropic/...`, and `/gemini/...` are not affected by the native-route protocol guard.
+
+## Common Patterns
+
+| Goal | Route to use |
+| --- | --- |
+| Keep OpenAI SDK, call Claude | `https://api.portix.ai/openai/v1/chat/completions` |
+| Keep OpenAI SDK, call Gemini | `https://api.portix.ai/openai/v1/chat/completions` |
+| Keep Anthropic SDK, call GPT | `https://api.portix.ai/anthropic/v1/messages` |
+| Keep Anthropic SDK, call Gemini | `https://api.portix.ai/anthropic/v1/messages` |
+| Keep Gemini SDK, call GPT | `https://api.portix.ai/gemini/v1beta/models/{model}:generateContent` |
+| Keep Gemini SDK, call Claude | `https://api.portix.ai/gemini/v1beta/models/{model}:generateContent` |
+
+## Error Behavior
+
+Protocol mismatches return a consistent JSON body:
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "400",
+    "message": "..."
+  }
+}
+```
+
+The error message tells developers:
+
+- which request format was detected
+- why the native route is incompatible
+- which converter route or native route to use instead
+- which docs page to read next

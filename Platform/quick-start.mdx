@@ -1,0 +1,56 @@
+---
+title: "Quick Start"
+---
+
+Get started with Portix in 3 steps
+
+## 1. Get Your API Key
+
+1. Sign up at [https://portix.ai/dashboard/overview](https://portix.ai/dashboard/overview)
+2. Top up your balance
+3. Create an API key
+
+## 2. Make Your First Request
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```bash
+    curl https://api.portix.ai/v1/chat/completions \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -d '{
+        "model": "gpt-5.5",
+        "messages": [{"role": "user", "content": "Hello!"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Anthropic">
+    ```bash
+    curl https://api.portix.ai/v1/messages \
+      -H "Content-Type: application/json" \
+      -H "x-api-key: YOUR_API_KEY" \
+      -H "anthropic-version: 2026-06-01" \
+      -d '{
+        "model": "claude-sonnet-5",
+        "max_tokens": 1024,
+        "messages": [{"role": "user", "content": "Hello!"}]
+      }'
+    ```
+  </Tab>
+  <Tab title="Gemini">
+    ```bash
+    curl "https://api.portix.ai/v1beta/models/gemini-3.6-flash:generateContent" \
+      -H "Content-Type: application/json" \
+      -H "x-goog-api-key: $PIPELLM_API_KEY" \
+      -d '{
+        "contents": [
+          {
+            "role": "user",
+            "parts": [{"text": "Hello!"}]
+          }
+        ]
+      }'
+    
+    ```
+  </Tab>
+</Tabs>

@@ -1,0 +1,123 @@
+---
+title: "List Models"
+---
+
+Retrieve the Portix unified model catalog from /v1/models
+
+Use this route to retrieve the model IDs currently visible to your account. `/v1/models` is now a catalog-only endpoint. It returns model identity and protocol metadata, not pricing.
+
+For pricing, use [`/v1/models/pricing`](/api-reference/model-pricing).
+
+## Endpoint
+
+```text
+GET https://api.portix.ai/v1/models
+```
+
+## Authentication
+
+Use a standard Portix API key header:
+
+| Header | Example |
+| --- | --- |
+| `Authorization` | `Bearer $PIPELLM_API_KEY` |
+| `x-api-key` | `$PIPELLM_API_KEY` |
+
+## Notes
+
+- This route only supports `GET`.
+- The response is Portix's unified catalog schema.
+- Hidden and unlisted models are filtered out before the response is returned.
+- Results are sorted by model ID.
+- Pricing is intentionally excluded so the catalog does not imply a single authoritative price when the same model can route across multiple mappings.
+
+## Example Requests
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl https://api.portix.ai/v1/models \
+      -H "Authorization: Bearer $YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```python
+    import os
+    import requests
+    
+    response = requests.get(
+        "https://api.portix.ai/v1/models",
+        headers={"Authorization": f"Bearer {os.getenv('YOUR_API_KEY')}"},
+    )
+    
+    response.raise_for_status()
+    payload = response.json()
+    
+    for model in payload["data"]:
+        print(model["id"], model["type_target"])
+    ```
+  </Tab>
+  <Tab title="Node.js">
+    ```javascript
+    const response = await fetch("https://api.portix.ai/v1/models", {
+      headers: {
+        Authorization: `Bearer ${process.env.YOUR_API_KEY}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+    
+    const payload = await response.json();
+    for (const model of payload.data) {
+      console.log(model.id, model.type_target);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Response Format
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "gpt-5",
+      "display_name": "Gpt 5",
+      "type_target": "openai",
+      "created_at": "2026-06-01T00:00:00Z"
+    },
+    {
+      "id": "claude-sonnet-5",
+      "display_name": "Claude Sonnet 5",
+      "type_target": "anthropic",
+      "created_at": "2026-06-01T00:00:00Z"
+    }
+  ],
+  "total": 2
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `object` | string | Always `"list"` |
+| `data` | array | Array of model catalog entries |
+| `data[].id` | string | Model ID used in API requests |
+| `data[].display_name` | string | Human-readable label generated from the model ID |
+| `data[].type_target` | string | Target protocol family for routing, such as `openai`, `anthropic`, or `gemini` |
+| `data[].created_at` | string | RFC3339 timestamp chosen from the model metadata |
+| `total` | integer | Total number of returned models |
+
+## Why This Route Matters
+
+Use `/v1/models` when you need to:
+
+- populate a model picker in your UI
+- validate whether a model is visible to the current account
+- decide which protocol family a model is exposed under
+
+Use [`/v1/models/pricing`](/api-reference/model-pricing) when you need authoritative billing data.

@@ -1,0 +1,65 @@
+---
+title: "Rate Limits"
+---
+
+## Rate Limiting
+
+Your API rate limit is based on your account tier. Your balance is checked separately before each request; it does not dynamically increase or decrease your RPM.
+
+### Account Tiers
+
+Accounts are automatically assigned to a tier based on eligible successful payments.
+
+| Tier | Eligibility | RPM |
+| --- | --- | --- |
+| `tier_0` | No eligible payment | 6 |
+| `tier_1` | Eligible payments totaling at least \$5 | 30 |
+| `tier_2` | Eligible payments totaling at least \$50, with first eligible payment more than 7 days ago | 120 |
+| `tier_3` | Eligible payments totaling at least \$250, with first eligible payment more than 7 days ago | 300 |
+| `tier_4` | Eligible payments totaling at least \$1,000, with first eligible payment more than 14 days ago | 600 |
+
+Eligible payments are successful customer payments. Promotional credits, corrections, complimentary credits, and manual adjustments may not count toward automatic tier upgrades unless marked as eligible by Portix.
+
+### Enterprise and Custom Limits
+
+Enterprise customers can receive a custom RPM override. A custom override takes precedence over the automatic tier limit.
+
+Need higher limits? Contact us at [support@portix.ai](mailto:support@portix.ai).
+
+## Balance Protection
+
+To prevent unexpected overuse, the platform performs a **real-time balance check** before processing each request. If your balance is insufficient, the request will be rejected with a `402` status code.
+
+### Insufficient Balance Response (402)
+
+```json
+{
+  "error": {
+    "type": "insufficient_balance",
+    "code": "balance_exceeded",
+    "message": "Insufficient balance. Please recharge to continue."
+  }
+}
+```
+
+## Rate Limit Response (429)
+
+```json
+{
+  "error": {
+    "type": "rate_limit_error",
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Your current limit is 120 requests per minute (approximately 2.00 requests per second). Please visit https://portix.ai/wallet to upgrade your plan for higher limits."
+  }
+}
+```
+
+## Rate Limit Headers
+
+Every API response includes rate limit information:
+
+| Header | Description |
+| --- | --- |
+| `x-ratelimit-limit-requests` | Your current RPM limit |
+| `x-ratelimit-remaining-requests` | Remaining requests in this window |
+| `x-ratelimit-reset-requests` | Time until the window resets |

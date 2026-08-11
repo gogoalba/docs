@@ -1,0 +1,45 @@
+---
+title: "Overview"
+---
+
+Gemini API authentication, endpoints, and supported models
+
+## Base URL
+
+```text
+https://api.portix.ai
+```
+
+## Authentication
+
+| Header | Value |
+| --- | --- |
+| `x-goog-api-key` | `$PIPELLM_API_KEY` |
+
+## Endpoints
+
+| Type | Endpoint |
+| --- | --- |
+| Non-Streaming | `POST /v1beta/models/{model}:generateContent` |
+| Streaming | `POST /v1beta/models/{model}:streamGenerateContent` |
+
+## Supported Models
+
+**Text Models**
+
+- gemini-3-pro
+- gemini-3-flash
+- gemini-2.5-flash
+- gemini-2.5-flash-lite
+- gemini-2.5-pro
+- gemini-2.0-flash
+- gemini-2.0-flash-lite
+
+**Image Models (Nano Banana)**
+
+- gemini-3-pro-image-preview (Nano Banana Pro)
+- gemini-2.5-flash-image (Nano Banana)
+
+> \[!IMPORTANT\] **Gemini 3 Series**: HTTP/cURL requests require request signing. See the [Gemini 3 documentation](https://ai.google.dev/gemini-api/docs/gemini-3) for details. SDK users are not affected.
+
+For the complete model list, see the [Gemini API Models documentation](https://ai.google.dev/gemini-api/docs/models).
