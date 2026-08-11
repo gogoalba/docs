@@ -68,14 +68,14 @@
           {
             "group": "Portix-Platform",
             "pages": [
-              "index-zh/Portix平台/untitled-page-2",
-              "index-zh/Portix平台/untitled-page"
+              "index-zh/Portix-Platform/untitled-page-2",
+              "index-zh/Portix-Platform/untitled-page"
             ]
           },
           {
             "group": "Gateway-API",
             "pages": [
-              "index-zh/网关API/pipe-llm-pipe-llm-converter-api-converter-open-ai-chat-completions-v1-chat-completions-openai-v1-chat-completions-open-ai-open-ai-anthropic-gemini-converter-open-ai-responses-v1-responses-open-ai"
+              "index-zh/Gateway-API/pipe-llm-pipe-llm-converter-api-converter-open-ai-chat-completions-v1-chat-completions-openai-v1-chat-completions-open-ai-open-ai-anthropic-gemini-converter-open-ai-responses-v1-responses-open-ai"
             ]
           }
         ],
