@@ -1,0 +1,165 @@
+---
+title: "Environment Variables for Portrix API Configuration"
+sidebarTitle: "Environment Variables"
+description: "Reference for the environment variables used to configure Portrix API access. Set PORTRIX_API_KEY and PORTRIX_BASE_URL in your application environment."
+---
+
+The recommended way to configure Portrix in your application is through environment variables. Externalizing credentials and configuration from your source code keeps secrets out of version control, makes it easy to switch between environments (development, staging, production), and follows security best practices.
+
+## Core variables
+
+| Variable                | Required | Default                          | Description                                                                   |
+|-------------------------|----------|----------------------------------|-------------------------------------------------------------------------------|
+| `PORTRIX_API_KEY`       | Yes      | —                                | Your Portrix API key. Obtain this from the dashboard under **Settings > API Keys**. |
+| `PORTRIX_BASE_URL`      | No       | `https://api.portrix.ai/v1`      | The API base URL. Override this for custom deployments or local proxies.      |
+| `PORTRIX_DEFAULT_MODEL` | No       | —                                | A default model ID (e.g. `openai/gpt-4o`) used when your code doesn't specify one. |
+
+<Warning>
+  Never commit `.env` files containing real API keys to version control. Add `.env` to your `.gitignore` immediately after creating it.
+</Warning>
+
+## Setting variables
+
+<Tabs>
+  <Tab title="macOS / Linux">
+    Add the following lines to your shell profile (`~/.zshrc`, `~/.bashrc`, or `~/.bash_profile`) to make the variables available in every terminal session:
+
+    ```bash
+    export PORTRIX_API_KEY="your_portrix_api_key_here"
+    export PORTRIX_BASE_URL="https://api.portrix.ai/v1"
+    export PORTRIX_DEFAULT_MODEL="openai/gpt-4o"
+    ```
+
+    After editing the file, reload your shell:
+
+    ```bash
+    source ~/.zshrc   # or ~/.bashrc, depending on your shell
+    ```
+
+    To set a variable only for the current terminal session (without persisting it), run the `export` commands directly in your terminal.
+  </Tab>
+  <Tab title="Windows">
+    **Command Prompt (current session only):**
+
+    ```bash
+    set PORTRIX_API_KEY=your_portrix_api_key_here
+    set PORTRIX_BASE_URL=https://api.portrix.ai/v1
+    ```
+
+    **PowerShell (current session only):**
+
+    ```bash
+    $env:PORTRIX_API_KEY = "your_portrix_api_key_here"
+    $env:PORTRIX_BASE_URL = "https://api.portrix.ai/v1"
+    ```
+
+    **System-wide (persistent):** Open **System Properties > Advanced > Environment Variables**, then add new User or System variables using the GUI. Changes take effect in new terminal windows.
+  </Tab>
+  <Tab title="Docker">
+    **Pass variables at run time with `-e`:**
+
+    ```bash
+    docker run -e PORTRIX_API_KEY="your_portrix_api_key_here" \
+               -e PORTRIX_BASE_URL="https://api.portrix.ai/v1" \
+               your-image-name
+    ```
+
+    **Use an `env_file` in `docker-compose.yml`:**
+
+    ```yaml
+    services:
+      app:
+        image: your-image-name
+        env_file:
+          - .env
+    ```
+
+    Store your variables in a `.env` file at the project root (and add it to `.gitignore`). Docker Compose will load them automatically.
+  </Tab>
+  <Tab title=".env File">
+    Create a `.env` file in the root of your project:
+
+    ```bash
+    PORTRIX_API_KEY=your_portrix_api_key_here
+    PORTRIX_BASE_URL=https://api.portrix.ai/v1
+    PORTRIX_DEFAULT_MODEL=openai/gpt-4o
+    ```
+
+    Then use a library like `python-dotenv` (Python) or `dotenv` (Node.js) to load the file at application startup. See the examples below.
+
+    Add `.env` to `.gitignore` to prevent accidental commits:
+
+    ```bash
+    echo ".env" >> .gitignore
+    ```
+  </Tab>
+</Tabs>
+
+## Loading in Python
+
+Use the built-in `os` module to read environment variables, and `python-dotenv` to load a `.env` file during local development.
+
+```python
+import os
+from dotenv import load_dotenv  # pip install python-dotenv
+import openai
+
+# Load variables from .env (no-op if the file doesn't exist)
+load_dotenv()
+
+client = openai.OpenAI(
+    api_key=os.environ.get("PORTRIX_API_KEY"),
+    base_url=os.environ.get("PORTRIX_BASE_URL", "https://api.portrix.ai/v1"),
+)
+
+default_model = os.environ.get("PORTRIX_DEFAULT_MODEL", "openai/gpt-4o")
+
+response = client.chat.completions.create(
+    model=default_model,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+print(response.choices[0].message.content)
+```
+
+## Loading in Node.js
+
+Use `process.env` to access variables and the `dotenv` package to load a `.env` file.
+
+```javascript
+import "dotenv/config"; // npm install dotenv
+import OpenAI from "openai"; // npm install openai
+
+const client = new OpenAI({
+  apiKey: process.env.PORTRIX_API_KEY,
+  baseURL: process.env.PORTRIX_BASE_URL ?? "https://api.portrix.ai/v1",
+});
+
+const defaultModel = process.env.PORTRIX_DEFAULT_MODEL ?? "openai/gpt-4o";
+
+const response = await client.chat.completions.create({
+  model: defaultModel,
+  messages: [{ role: "user", content: "Hello!" }],
+});
+
+console.log(response.choices[0].message.content);
+```
+
+## CI/CD
+
+Keep secrets out of your code and CI configuration files by using your platform's native secret management:
+
+<CardGroup cols={2}>
+  <Card title="GitHub Actions" icon="github">
+    Store your API key in **Settings > Secrets and variables > Actions** as a repository secret named `PORTRIX_API_KEY`. Reference it in your workflow:
+
+    ```yaml
+    env:
+      PORTRIX_API_KEY: ${{ secrets.PORTRIX_API_KEY }}
+    ```
+  </Card>
+  <Card title="Vercel" icon="triangle">
+    Add `PORTRIX_API_KEY` under **Project Settings > Environment Variables** in the Vercel dashboard. Select which environments (Production, Preview, Development) should receive the variable. Vercel injects it automatically at build and runtime.
+  </Card>
+</CardGroup>
+
+For other platforms (Railway, Render, AWS, GCP, Azure), use the equivalent secrets or environment configuration feature — the variable names remain the same regardless of platform.

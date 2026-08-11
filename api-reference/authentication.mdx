@@ -1,0 +1,121 @@
+---
+title: "Portrix API Authentication: Keys and Bearer Tokens"
+sidebarTitle: "Authentication"
+description: "Authenticate Portrix API requests using Bearer tokens in the Authorization header. Get your API key from the dashboard at app.portrix.ai."
+---
+
+Every request to the Portrix API must include an API key in the `Authorization` header as a Bearer token. Without a valid key the API returns a `401 Unauthorized` response. Your API key identifies your account, enforces rate limits, and controls which models and features you can access.
+
+## Header Format
+
+Include your API key in every request using the following header format:
+
+```http
+Authorization: Bearer <your-api-key>
+```
+
+A full request header block looks like this:
+
+```http
+POST /v1/chat/completions HTTP/1.1
+Host: api.portrix.ai
+Content-Type: application/json
+Authorization: Bearer px-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+<Warning>
+  Never include your API key in a URL query parameter. Always pass it in the `Authorization` header to prevent the key from being logged in server access logs or browser history.
+</Warning>
+
+## Getting an API Key
+
+<Steps>
+  <Step title="Create a Portrix account">
+    Sign up for a free account at [app.portrix.ai](https://app.portrix.ai). You can sign in with Google, GitHub, or an email address.
+  </Step>
+  <Step title="Open API key settings">
+    Once you are logged in, navigate to **Settings → API Keys** in the left sidebar.
+  </Step>
+  <Step title="Create a new key">
+    Click **Create new key**, give it a descriptive name (e.g. `production-backend` or `local-dev`), and set any optional scopes or expiry. Click **Create**.
+  </Step>
+  <Step title="Copy your key">
+    Copy the key immediately — it is only shown once. Store it securely in a password manager or secrets vault. If you lose it, you must rotate it and update all references.
+  </Step>
+</Steps>
+
+## Using the Key
+
+The examples below show how to authenticate using cURL, the Python `openai` SDK, and the JavaScript `openai` SDK. In every case you only need to point the client at the Portrix base URL and supply your key.
+
+<CodeGroup>
+```bash cURL
+curl https://api.portrix.ai/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $PORTRIX_API_KEY" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      { "role": "user", "content": "Hello!" }
+    ]
+  }'
+```
+
+```python Python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+
+response = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+
+print(response.choices[0].message.content)
+```
+
+```typescript TypeScript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.PORTRIX_API_KEY,
+  baseURL: "https://api.portrix.ai/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "openai/gpt-4o",
+  messages: [{ role: "user", content: "Hello!" }],
+});
+
+console.log(response.choices[0].message.content);
+```
+</CodeGroup>
+
+<Tip>
+  Store your API key in an environment variable named `PORTRIX_API_KEY`. The examples above read the key from the environment so it never appears in your source code.
+</Tip>
+
+## Security Best Practices
+
+Follow these guidelines to keep your API keys secure:
+
+- **Use environment variables** — never hard-code keys in source files. Use `.env` files locally and your platform's secrets manager in production (e.g. AWS Secrets Manager, Vercel Environment Variables, GitHub Actions secrets).
+- **Never commit keys to version control** — add `.env` to your `.gitignore` and audit your repository history if you suspect a key was exposed.
+- **Rotate keys regularly** — treat API keys like passwords. Rotate them periodically, and immediately rotate any key you suspect has been compromised.
+- **Use one key per environment** — create separate keys for development, staging, and production so you can revoke a single environment's access without disrupting others.
+- **Restrict key scopes** — when creating a key, grant only the permissions required for that key's use case. Avoid using an unrestricted admin key in application code.
+
+## Authentication Errors
+
+| Status Code       | Meaning                                                                                              |
+|-------------------|------------------------------------------------------------------------------------------------------|
+| `401 Unauthorized` | The `Authorization` header is missing, malformed, or contains an invalid or revoked API key.        |
+| `403 Forbidden`    | The API key is valid but does not have permission to access the requested model or feature.          |
+
+If you receive a `401`, double-check that your key is correctly copied and that the `Authorization: Bearer` prefix is present. If you receive a `403`, review the key's scopes in **Settings → API Keys** or contact support to request elevated permissions.
+
+See the [Errors reference](/api-reference/errors) for the full list of error codes and response formats.

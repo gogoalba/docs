@@ -1,0 +1,109 @@
+---
+title: "Portrix API Reference: Endpoints and Authentication"
+sidebarTitle: "Overview"
+description: "Complete reference for the Portrix REST API. OpenAI-compatible endpoints for chat, completions, embeddings, and model listing at api.portrix.ai/v1."
+---
+
+The Portrix API is a REST API that follows the OpenAI API specification. Any tool, SDK, or code that works with OpenAI works with Portrix with minimal changes — simply swap the base URL and your API key to gain access to 400+ models from every major provider through a single, unified endpoint.
+
+## Base URL
+
+All API endpoints are relative to the following base URL:
+
+```
+https://api.portrix.ai/v1
+```
+
+Every request you make should target a path under this base URL. For example, to call the chat completions endpoint you send a request to `https://api.portrix.ai/v1/chat/completions`.
+
+## Authentication
+
+Portrix authenticates requests using Bearer tokens in the `Authorization` header. You can generate an API key from your dashboard at [app.portrix.ai](https://app.portrix.ai).
+
+```http
+Authorization: Bearer <your-api-key>
+```
+
+See the [Authentication guide](/api-reference/authentication) for detailed setup instructions, SDK examples, and security best practices.
+
+## Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Chat Completions" icon="messages" href="/api-reference/chat-completions">
+    **POST /v1/chat/completions**
+
+    Generate chat responses from any model using a conversation history. The primary endpoint for most use cases.
+  </Card>
+  <Card title="Text Completions" icon="text" href="/api-reference/completions">
+    **POST /v1/completions**
+
+    Legacy prompt-based text completion for workflows that require a raw continuation rather than a chat turn.
+  </Card>
+  <Card title="Embeddings" icon="vector-square" href="/api-reference/embeddings">
+    **POST /v1/embeddings**
+
+    Convert text into numeric vector representations for semantic search, clustering, and retrieval-augmented generation.
+  </Card>
+  <Card title="Models" icon="list" href="/api-reference/models">
+    **GET /v1/models**
+
+    Retrieve the full list of AI models available through Portrix, including provider metadata and capability flags.
+  </Card>
+</CardGroup>
+
+## Request Format
+
+All requests must use a JSON body with the `Content-Type: application/json` header set. All responses are also returned as JSON. For streaming endpoints, responses use `text/event-stream` (Server-Sent Events).
+
+```http
+Content-Type: application/json
+Authorization: Bearer <your-api-key>
+```
+
+## Model IDs
+
+Portrix uses a `{provider}/{model}` naming convention for all model IDs. This tells the gateway which upstream provider to route your request to. For example:
+
+| Provider  | Example Model ID                         |
+|-----------|------------------------------------------|
+| OpenAI    | `openai/gpt-4o`                          |
+| Anthropic | `anthropic/claude-3-5-sonnet`            |
+| Google    | `google/gemini-2.0-flash`                |
+| Meta      | `meta/llama-3.1-70b-instruct`            |
+
+Pass the full `provider/model` string in the `model` field of any request body.
+
+## Portrix-Specific Headers
+
+In addition to the standard OpenAI-compatible headers, Portrix supports several request headers that control routing, fallback, and search behavior. You can attach these to any request.
+
+| Header                    | Type     | Description                                                                                     |
+|---------------------------|----------|-------------------------------------------------------------------------------------------------|
+| `x-portrix-model`         | `string` | Override the model used for a request without changing the request body `model` field. Useful for middleware that cannot modify the body. |
+| `x-portrix-fallback`      | `string` | A comma-separated ordered list of fallback model IDs to try if the primary model is unavailable. |
+| `x-portrix-route`         | `string` | Force routing to a specific provider region or deployment tier.                                  |
+| `x-portrix-search`        | `string` | Enable or configure web-search augmentation for supported models (`"true"` to enable).           |
+| `x-portrix-request-id`    | `string` | **Response header.** A unique ID for the request, useful for debugging and support tickets.      |
+
+## Rate Limits
+
+Portrix enforces rate limits on a per-key basis. When you exceed a limit, the API returns a `429 Too Many Requests` response with a `Retry-After` header indicating when you can retry. See the [Rate Limits guide](/configuration/rate-limits) for information on default limits, how to check your current usage, and how to request an increase.
+
+## SDKs
+
+You can use Portrix with any OpenAI-compatible SDK by setting the `base_url` and `api_key`. No custom SDK required.
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="/integrations/python">
+    Use the official `openai` Python package pointed at the Portrix base URL.
+  </Card>
+  <Card title="TypeScript / Node.js SDK" icon="js" href="/integrations/javascript">
+    Use the `openai` npm package with a custom `baseURL` option.
+  </Card>
+  <Card title="REST / cURL" icon="terminal" href="/integrations/openai-sdk">
+    Call the API directly with any HTTP client — no SDK required.
+  </Card>
+  <Card title="LangChain & LlamaIndex" icon="link" href="/integrations/langchain">
+    Drop Portrix in as the LLM provider in popular orchestration frameworks.
+  </Card>
+</CardGroup>

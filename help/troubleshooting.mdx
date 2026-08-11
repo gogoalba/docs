@@ -1,0 +1,212 @@
+---
+title: "Troubleshooting Common Portrix API Errors and Issues"
+sidebarTitle: "Troubleshooting"
+description: "Diagnose and fix the most common errors with the Portrix API: 401 auth failures, 429 rate limits, 404 model not found, and connection timeouts."
+---
+
+This guide helps you diagnose and fix the most common issues you might encounter when using the Portrix API. Work through the relevant section for your error, and if you're still stuck, contact support with your request ID.
+
+<Info>
+  Every Portrix response includes an `x-portrix-request-id` header. Copy this value and include it whenever you contact support — it allows the team to locate your specific request in the logs and resolve issues significantly faster.
+</Info>
+
+<AccordionGroup>
+
+  <Accordion title="401 Unauthorized">
+    **Symptom:** The API returns `401 Unauthorized` for every request.
+
+    **Cause:** Your API key is missing, malformed, or has been revoked.
+
+    **Fix:**
+    1. Confirm you're including the `Authorization` header in your request with the exact format:
+       ```
+       Authorization: Bearer YOUR_PORTRIX_API_KEY
+       ```
+    2. Check that you're using a **Portrix** API key (starting with the Portrix key prefix), not an OpenAI or other provider key.
+    3. Verify the key is active in the dashboard under **Settings > API Keys**. Revoked or expired keys are shown with a status of "Inactive".
+    4. Make sure there are no extra spaces, newline characters, or quotes wrapping the key value.
+
+    ```bash
+    # Correct
+    curl https://api.portrix.ai/v1/chat/completions \
+      -H "Authorization: Bearer pk_live_abc123..."
+
+    # Incorrect — missing "Bearer" prefix
+    curl https://api.portrix.ai/v1/chat/completions \
+      -H "Authorization: pk_live_abc123..."
+    ```
+  </Accordion>
+
+  <Accordion title="403 Forbidden">
+    **Symptom:** The API returns `403 Forbidden`, even though your API key is valid and active.
+
+    **Cause:** Your API key exists but lacks the permissions required for the operation you're attempting. API keys can be scoped to specific models, endpoints, or usage types.
+
+    **Fix:**
+    1. Go to **Settings > API Keys** in the dashboard.
+    2. Click on the key you're using and review its **Scopes** and **Restrictions**.
+    3. If the key is restricted to specific models, ensure the model you're requesting is on the allowed list.
+    4. If you need broader access, either update the key's scopes or create a new unrestricted key.
+
+    A `403` can also occur if you're on the Free plan and attempting to access a feature or model that requires a paid plan. Check the **Billing** page for plan-level restrictions.
+  </Accordion>
+
+  <Accordion title="404 Model Not Found">
+    **Symptom:** The API returns `404` with a message like `model not found` or `unknown model`.
+
+    **Cause:** The model ID you specified is incorrect, misspelled, or not yet available on your account.
+
+    **Fix:**
+    1. Verify you're using the full `{provider}/{model}` format. For example:
+       - ✅ `openai/gpt-4o`
+       - ✅ `anthropic/claude-3-5-sonnet`
+       - ❌ `gpt-4o` (missing provider prefix)
+       - ❌ `claude-3.5-sonnet` (wrong separator and missing prefix)
+    2. Fetch the complete list of models available to your account to find the exact ID:
+
+    ```bash
+    curl https://api.portrix.ai/v1/models \
+      -H "Authorization: Bearer YOUR_PORTRIX_KEY"
+    ```
+
+    3. Check the [Supported Models](/help/supported-models) page for a curated list of popular model IDs.
+    4. If a model you expect to see is missing from the list, contact support — it may require enablement on your account.
+  </Accordion>
+
+  <Accordion title="429 Too Many Requests">
+    **Symptom:** The API returns `429 Too Many Requests` intermittently or consistently under load.
+
+    **Cause:** You've exceeded your requests-per-minute (RPM), tokens-per-minute (TPM), or daily token quota.
+
+    **Fix:**
+    1. Read the `Retry-After` response header — it tells you exactly how many seconds to wait before retrying.
+    2. Implement exponential backoff with jitter in your application (see code examples on the [Rate Limits](/configuration/rate-limits) page).
+    3. Review your current usage on the **Usage** page in the dashboard to understand what's driving the spike.
+    4. If you're consistently hitting limits, upgrade your plan or contact support for a custom quota.
+
+    ```python
+    import time
+    from openai import RateLimitError
+
+    try:
+        response = client.chat.completions.create(...)
+    except RateLimitError as e:
+        retry_after = int(e.response.headers.get("retry-after", 5))
+        print(f"Rate limited. Waiting {retry_after}s...")
+        time.sleep(retry_after)
+    ```
+
+    <Tip>
+      Configure Portrix fallback routing to automatically try a different model when you hit a rate limit. This keeps your application responsive without requiring manual retry logic.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="500 / 502 / 503 from Provider">
+    **Symptom:** The API returns a `500 Internal Server Error`, `502 Bad Gateway`, or `503 Service Unavailable`.
+
+    **Cause:** The upstream provider (OpenAI, Anthropic, Google, etc.) is experiencing an outage, degraded performance, or the request exceeded the provider's internal limits.
+
+    **Fix:**
+    1. Check the [Portrix status page](https://status.portrix.ai) for any active incidents.
+    2. Check the affected provider's status page directly (e.g., status.openai.com, status.anthropic.com).
+    3. Configure fallback routing in your Portrix request to automatically retry with a different model or provider when a `5xx` error occurs:
+
+    ```json
+    {
+      "model": "openai/gpt-4o",
+      "fallbacks": ["anthropic/claude-3-5-haiku", "google/gemini-2.0-flash"],
+      "messages": [{"role": "user", "content": "Hello"}]
+    }
+    ```
+
+    4. For transient errors, implement a retry with backoff — `5xx` errors from providers are often short-lived.
+  </Accordion>
+
+  <Accordion title="Streaming connection drops">
+    **Symptom:** When using `stream: true`, the connection closes before the response is complete. You receive a partial response or a connection reset error.
+
+    **Cause:** Network timeouts, intermediate proxy configurations, or client-side read timeouts that are too short for the length of the response.
+
+    **Fix:**
+    1. Increase your HTTP client's read timeout. For long completions, a timeout of 120–300 seconds is recommended.
+    2. Ensure any proxies or load balancers between your client and Portrix are configured to support long-lived HTTP connections (disable aggressive idle timeouts).
+    3. Handle stream interruptions in your code and reconnect if needed:
+
+    ```python
+    import openai
+
+    client = openai.OpenAI(
+        api_key="YOUR_PORTRIX_KEY",
+        base_url="https://api.portrix.ai/v1",
+        timeout=300.0,  # 5-minute timeout for long streams
+    )
+
+    with client.chat.completions.stream(
+        model="openai/gpt-4o",
+        messages=[{"role": "user", "content": "Write a long essay..."}],
+    ) as stream:
+        for chunk in stream:
+            if chunk.choices[0].delta.content:
+                print(chunk.choices[0].delta.content, end="", flush=True)
+    ```
+
+    4. If the issue persists, try without streaming to determine whether it's a streaming-specific problem.
+  </Accordion>
+
+  <Accordion title="Wrong base URL">
+    **Symptom:** Requests succeed but return OpenAI branding in errors, or you see `401` errors even with a valid Portrix key. Alternatively, your code silently continues using the OpenAI API and you're being billed by OpenAI.
+
+    **Cause:** Your base URL is still set to `https://api.openai.com/v1` instead of `https://api.portrix.ai/v1`.
+
+    **Fix:**
+    Explicitly set the base URL in your client configuration. Do not rely on defaults:
+
+    ```python
+    # Python — always set base_url explicitly
+    client = openai.OpenAI(
+        api_key="YOUR_PORTRIX_KEY",
+        base_url="https://api.portrix.ai/v1",  # ← required
+    )
+    ```
+
+    ```javascript
+    // JavaScript — always set baseURL explicitly
+    const client = new OpenAI({
+      apiKey: "YOUR_PORTRIX_KEY",
+      baseURL: "https://api.portrix.ai/v1",  // ← required
+    });
+    ```
+
+    Use the `PORTRIX_BASE_URL` environment variable to manage this across environments. See [Environment Variables](/configuration/environment-variables) for details.
+  </Accordion>
+
+  <Accordion title="Model returns unexpected output">
+    **Symptom:** The model's responses seem off — wrong tone, missing capabilities, or behavior inconsistent with what you expect.
+
+    **Cause:** Several factors can cause this:
+    - You may be targeting the wrong model (e.g., `gpt-4o-mini` instead of `gpt-4o`)
+    - A missing or incomplete system prompt that the original model relied upon
+    - Provider-specific behavior differences — models from different providers respond differently to the same prompts
+
+    **Fix:**
+    1. Double-check the `model` field in your request. Log it explicitly if you're setting it dynamically.
+    2. Inspect the `model` field in the API response — it reflects the model that actually served the request.
+    3. When switching from one provider's model to another, expect to adjust your system prompt. Instructions that work perfectly for GPT-4o may need tuning for Claude or Gemini.
+    4. If you have fallbacks configured, confirm which model in your fallback chain actually fulfilled the request by checking the `x-portrix-model` response header.
+  </Accordion>
+
+</AccordionGroup>
+
+## Getting help
+
+If these steps don't resolve your issue, the Portrix support team is here to help:
+
+- **Email:** [support@portrix.ai](mailto:support@portrix.ai)
+- **In-dashboard chat:** Click the chat bubble on [app.portrix.ai](https://app.portrix.ai)
+
+When filing a support request, include:
+
+1. The `x-portrix-request-id` from the response headers of the failing request
+2. The full request you're sending (redact your API key)
+3. The complete error response body
+4. The SDK or HTTP client you're using and its version

@@ -1,0 +1,173 @@
+---
+title: "POST /v1/embeddings — Generate Text Embeddings API"
+sidebarTitle: "Embeddings"
+description: "POST /v1/embeddings — generate vector embeddings for text. Use openai/text-embedding-3-small or text-embedding-3-large for semantic search and retrieval."
+---
+
+The embeddings endpoint converts text into numeric vector representations that capture its semantic meaning. Two pieces of text with similar meanings will have embedding vectors that are close together in vector space, regardless of the exact words used. You can use embeddings for semantic search, document clustering, duplicate detection, and retrieval-augmented generation (RAG) — anywhere you need to measure or compare the meaning of text.
+
+## Endpoint
+
+```
+POST https://api.portrix.ai/v1/embeddings
+```
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  The embedding model ID in `provider/model` format. Recommended options:
+
+  - `openai/text-embedding-3-small` — fast and cost-effective, 1536 dimensions by default
+  - `openai/text-embedding-3-large` — highest accuracy, 3072 dimensions by default
+
+  Use [GET /v1/models](/api-reference/models) with `?provider=openai` to see all available embedding models.
+</ParamField>
+
+<ParamField body="input" type="string | array" required>
+  The text or texts to embed. Pass a single string to embed one piece of text, or an array of strings to embed multiple texts in a single API call. Batching is more efficient than making one request per string.
+</ParamField>
+
+<ParamField body="encoding_format" type="string" default="float">
+  The format of the returned embedding values. Use `"float"` for a standard JSON array of floating-point numbers (the default), or `"base64"` for a base64-encoded binary representation that is more compact over the wire.
+</ParamField>
+
+<ParamField body="dimensions" type="integer">
+  The number of dimensions to include in the output embedding. Supported only by `text-embedding-3` models. Reducing dimensions lowers storage and compute costs at some accuracy cost.
+</ParamField>
+
+## Request Example
+
+```bash cURL
+curl https://api.portrix.ai/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $PORTRIX_API_KEY" \
+  -d '{
+    "model": "openai/text-embedding-3-small",
+    "input": [
+      "Portrix gives you access to every major AI model.",
+      "A unified API gateway for large language models."
+    ]
+  }'
+```
+
+## Response Fields
+
+<ResponseField name="object" type="string">
+  Always `"list"`.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  An array of embedding objects, one per input string, in the same order as the input array.
+
+  <Expandable title="Embedding object fields">
+    <ResponseField name="data[].object" type="string">
+      Always `"embedding"`.
+    </ResponseField>
+
+    <ResponseField name="data[].index" type="integer">
+      The position of this embedding in the input array, starting from `0`.
+    </ResponseField>
+
+    <ResponseField name="data[].embedding" type="array of floats">
+      The embedding vector as an array of floating-point numbers. The length equals the number of dimensions for the model (e.g. 1536 for `text-embedding-3-small`). When `encoding_format` is `"base64"`, this field is a base64 string instead.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  The model ID used to generate the embeddings.
+</ResponseField>
+
+<ResponseField name="usage.prompt_tokens" type="integer">
+  The total number of tokens across all input strings.
+</ResponseField>
+
+<ResponseField name="usage.total_tokens" type="integer">
+  The same as `prompt_tokens` for embeddings — there are no completion tokens.
+</ResponseField>
+
+## Response Example
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.0023, -0.0091, 0.0412, -0.0187, 0.0334, "..."]
+    },
+    {
+      "object": "embedding",
+      "index": 1,
+      "embedding": [0.0019, -0.0083, 0.0388, -0.0201, 0.0311, "..."]
+    }
+  ],
+  "model": "openai/text-embedding-3-small",
+  "usage": {
+    "prompt_tokens": 18,
+    "total_tokens": 18
+  }
+}
+```
+
+<Note>
+  The `embedding` array is truncated above for readability. In a real response, it contains 1536 floating-point numbers for `text-embedding-3-small` (or 3072 for `text-embedding-3-large`). Every value is a number — the `"..."` placeholder above is not part of the actual JSON.
+</Note>
+
+## Common Use Cases
+
+- **Semantic search** — embed your documents once, store the vectors in a vector database, then embed a query and retrieve the most similar documents using nearest-neighbour search.
+- **Retrieval-augmented generation (RAG)** — combine semantic search with a language model to answer questions grounded in your own documents.
+- **Document clustering** — group large collections of text by topic without manually labelling them.
+- **Duplicate detection** — find near-duplicate documents by comparing embedding similarity, even when the wording differs.
+
+## Python Example
+
+The example below embeds a list of sentences using the `openai` SDK pointed at Portrix, then computes cosine similarity between pairs to find the most semantically related sentences.
+
+```python Python
+import os
+import numpy as np
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+
+texts = [
+    "The weather in Paris is warm today.",
+    "It is sunny and hot in the French capital.",
+    "Large language models can generate human-like text.",
+    "Portrix provides a unified API for AI models.",
+]
+
+# Embed all texts in a single request
+response = client.embeddings.create(
+    model="openai/text-embedding-3-small",
+    input=texts,
+)
+
+# Extract vectors in input order
+vectors = [item.embedding for item in sorted(response.data, key=lambda x: x.index)]
+
+def cosine_similarity(a, b):
+    a, b = np.array(a), np.array(b)
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+# Compare the first sentence against all others
+print("Similarity scores for:", texts[0])
+for i, text in enumerate(texts[1:], start=1):
+    score = cosine_similarity(vectors[0], vectors[i])
+    print(f"  vs '{text}': {score:.4f}")
+
+# Output:
+#   vs 'It is sunny and hot in the French capital.': 0.8912
+#   vs 'Large language models can generate human-like text.': 0.1243
+#   vs 'Portrix provides a unified API for AI models.': 0.1087
+```
+
+<Tip>
+  For production RAG systems, store your embedding vectors in a dedicated vector database such as Pinecone, Weaviate, or pgvector (PostgreSQL). These databases are optimised for approximate nearest-neighbour search at scale.
+</Tip>

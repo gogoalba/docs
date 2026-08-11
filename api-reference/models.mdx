@@ -1,0 +1,158 @@
+---
+title: "GET /v1/models — List and Retrieve Available Models"
+sidebarTitle: "Models"
+description: "GET /v1/models — retrieve a list of all AI models available through Portrix. Returns model IDs, owned_by provider, and capability metadata."
+---
+
+The models endpoint returns a list of all AI models currently available through Portrix, including their IDs, providers, and metadata. You can use this endpoint to build dynamic model pickers in your UI, verify that a model ID is correct before making a generation request, or filter the catalogue by provider to see what is available from a specific upstream source.
+
+## Endpoint
+
+```
+GET https://api.portrix.ai/v1/models
+```
+
+## Request
+
+No request body is required — this is a `GET` request. Include your `Authorization` header as with all Portrix API calls.
+
+**Optional query parameter:**
+
+| Parameter  | Type     | Description                                                                                         |
+|------------|----------|-----------------------------------------------------------------------------------------------------|
+| `provider` | `string` | Filter the results to models from a specific provider. For example, `?provider=anthropic` returns only Anthropic models. |
+
+## Response Fields
+
+<ResponseField name="object" type="string">
+  Always `"list"`.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  An array of model objects, one per available model.
+
+  <Expandable title="Model object fields">
+    <ResponseField name="data[].id" type="string">
+      The full model ID in `provider/model` format. Use this value in the `model` field of any generation or embedding request.
+    </ResponseField>
+
+    <ResponseField name="data[].object" type="string">
+      Always `"model"`.
+    </ResponseField>
+
+    <ResponseField name="data[].owned_by" type="string">
+      The name of the upstream provider that owns the model (e.g. `"openai"`, `"anthropic"`, `"google"`).
+    </ResponseField>
+
+    <ResponseField name="data[].created" type="integer">
+      Unix timestamp indicating when the model was added to the Portrix catalogue. This is not necessarily the model's original release date.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Request Examples
+
+<CodeGroup>
+```bash cURL
+# List all models
+curl https://api.portrix.ai/v1/models \
+  -H "Authorization: Bearer $PORTRIX_API_KEY"
+
+# Filter to Anthropic models only
+curl "https://api.portrix.ai/v1/models?provider=anthropic" \
+  -H "Authorization: Bearer $PORTRIX_API_KEY"
+```
+
+```python Python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+
+models = client.models.list()
+
+for model in models.data:
+    print(f"{model.id:50s}  owned_by={model.owned_by}")
+```
+</CodeGroup>
+
+## Response Example
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "openai/gpt-4o",
+      "object": "model",
+      "created": 1715731200,
+      "owned_by": "openai"
+    },
+    {
+      "id": "anthropic/claude-3-5-sonnet",
+      "object": "model",
+      "created": 1720396800,
+      "owned_by": "anthropic"
+    },
+    {
+      "id": "google/gemini-2.0-flash",
+      "object": "model",
+      "created": 1736121600,
+      "owned_by": "google"
+    },
+    {
+      "id": "meta/llama-3.1-70b-instruct",
+      "object": "model",
+      "created": 1721952000,
+      "owned_by": "meta"
+    }
+  ]
+}
+```
+
+## Retrieve a Single Model
+
+To fetch metadata for a specific model, append its ID to the endpoint path. Forward slashes in the model ID must be URL-encoded as `%2F`.
+
+```
+GET https://api.portrix.ai/v1/models/{model_id}
+```
+
+**Example:**
+
+```bash cURL
+curl "https://api.portrix.ai/v1/models/openai%2Fgpt-4o" \
+  -H "Authorization: Bearer $PORTRIX_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "id": "openai/gpt-4o",
+  "object": "model",
+  "created": 1715731200,
+  "owned_by": "openai"
+}
+```
+
+If the model ID does not exist in the Portrix catalogue, the endpoint returns a `404 Not Found` error. See the [Errors reference](/api-reference/errors) for the error response format.
+
+## Using the Model List
+
+Here are practical patterns for working with the models endpoint in your application:
+
+**Filter by provider** — use the `?provider=` query parameter to narrow results when you want to present provider-specific options in a UI dropdown. For example, `?provider=google` returns only Google Gemini models.
+
+**Build a dynamic model picker** — call the models endpoint at startup (or cache it with a short TTL) to populate a list of valid model IDs rather than hard-coding them. This means your application automatically reflects new models as Portrix adds them to the catalogue.
+
+**Validate model IDs before requests** — before sending a generation request with a model ID from user input, check whether it appears in the models list. This lets you surface a friendly "model not found" error in your UI before spending an API call.
+
+**Check provider availability** — if you notice elevated error rates from a provider, query the models endpoint to confirm the provider's models are still listed. Portrix may temporarily remove models from the catalogue during a provider outage.
+
+<Tip>
+  Cache the model list with a time-to-live of 5–15 minutes rather than calling the endpoint on every request. The catalogue changes infrequently, and caching reduces unnecessary overhead.
+</Tip>

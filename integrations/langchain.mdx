@@ -1,0 +1,207 @@
+---
+title: "Connect LangChain Chains and Agents to Portrix Gateway"
+sidebarTitle: "LangChain"
+description: "Connect LangChain to Portrix to access 400+ models in your chains and agents. Configure ChatOpenAI to point at the Portrix gateway."
+---
+
+LangChain's `ChatOpenAI` and `OpenAI` classes accept a custom `openai_api_base` (Python) or `configuration.baseURL` (JavaScript), which means you can point them at Portrix without any custom integrations or provider plugins. Your LangChain chains, agents, and pipelines gain access to every model on the platform — swapping providers becomes a one-line change.
+
+## Python (LangChain)
+
+### Installation
+
+```bash
+pip install langchain langchain-openai
+```
+
+### Basic chat model
+
+Configure `ChatOpenAI` with Portrix's base URL and your Portrix API key. Use the `model_name` parameter to specify any model available on Portrix:
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
+
+llm = ChatOpenAI(
+    model_name="anthropic/claude-3-5-sonnet",
+    openai_api_key=os.environ["PORTRIX_API_KEY"],
+    openai_api_base="https://api.portrix.ai/v1",
+    temperature=0.7,
+)
+
+messages = [
+    SystemMessage(content="You are a concise technical writer."),
+    HumanMessage(content="What is retrieval-augmented generation?"),
+]
+
+response = llm.invoke(messages)
+print(response.content)
+```
+
+### Simple chain
+
+Build a prompt-model-parser chain using LangChain's pipe syntax:
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+llm = ChatOpenAI(
+    model_name="openai/gpt-4o",
+    openai_api_key=os.environ["PORTRIX_API_KEY"],
+    openai_api_base="https://api.portrix.ai/v1",
+)
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant. Answer in {language}."),
+    ("human", "{question}"),
+])
+
+chain = prompt | llm | StrOutputParser()
+
+answer = chain.invoke({
+    "language": "English",
+    "question": "What are the main benefits of a unified AI gateway?",
+})
+
+print(answer)
+```
+
+## JavaScript (LangChain.js)
+
+### Installation
+
+<CodeGroup>
+  ```bash npm
+  npm install @langchain/openai @langchain/core
+  ```
+
+  ```bash yarn
+  yarn add @langchain/openai @langchain/core
+  ```
+
+  ```bash pnpm
+  pnpm add @langchain/openai @langchain/core
+  ```
+</CodeGroup>
+
+### Basic chat model
+
+```typescript
+import { ChatOpenAI } from "@langchain/openai";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+
+const llm = new ChatOpenAI({
+  model: "anthropic/claude-3-5-sonnet",
+  temperature: 0.7,
+  configuration: {
+    baseURL: "https://api.portrix.ai/v1",
+    apiKey: process.env.PORTRIX_API_KEY,
+  },
+});
+
+const response = await llm.invoke([
+  new SystemMessage("You are a concise technical writer."),
+  new HumanMessage("Explain what a vector database is."),
+]);
+
+console.log(response.content);
+```
+
+## Using different models
+
+Because changing models is a single property update, you can use different providers at different steps of a pipeline — for example, a fast cheap model for classification and a more powerful model for generation:
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+base_config = {
+    "openai_api_key": os.environ["PORTRIX_API_KEY"],
+    "openai_api_base": "https://api.portrix.ai/v1",
+}
+
+# Fast, cost-efficient model for triage/classification
+classifier_llm = ChatOpenAI(
+    model_name="google/gemini-2.0-flash",
+    temperature=0.0,
+    **base_config,
+)
+
+# Powerful model for final generation
+writer_llm = ChatOpenAI(
+    model_name="anthropic/claude-3-5-sonnet",
+    temperature=0.7,
+    **base_config,
+)
+
+classify_prompt = ChatPromptTemplate.from_template(
+    "Classify this support ticket in one word (billing/technical/general): {ticket}"
+)
+
+respond_prompt = ChatPromptTemplate.from_template(
+    "You are a support agent. Write a helpful reply to this {category} ticket: {ticket}"
+)
+
+classify_chain = classify_prompt | classifier_llm | StrOutputParser()
+respond_chain = respond_prompt | writer_llm | StrOutputParser()
+
+ticket = "I was charged twice for my subscription this month."
+category = classify_chain.invoke({"ticket": ticket})
+reply = respond_chain.invoke({"ticket": ticket, "category": category})
+
+print(f"Category: {category}")
+print(f"Reply: {reply}")
+```
+
+## LangChain agents with Portrix
+
+Use `ChatOpenAI` pointed at Portrix as the backbone for a LangChain tool-calling agent. Portrix normalises function/tool call responses across providers:
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.tools import tool
+
+@tool
+def get_word_count(text: str) -> int:
+    """Count the number of words in the given text."""
+    return len(text.split())
+
+llm = ChatOpenAI(
+    model_name="openai/gpt-4o",
+    openai_api_key=os.environ["PORTRIX_API_KEY"],
+    openai_api_base="https://api.portrix.ai/v1",
+)
+
+tools = [get_word_count]
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant with access to tools."),
+    ("human", "{input}"),
+    ("placeholder", "{agent_scratchpad}"),
+])
+
+agent = create_tool_calling_agent(llm, tools, prompt)
+executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
+result = executor.invoke({
+    "input": "How many words are in the phrase 'the quick brown fox'?"
+})
+print(result["output"])
+```
+
+<Note>
+  The `model_name` parameter (Python) and `model` parameter (JavaScript) must use Portrix's `provider/model` format — for example, `"openai/gpt-4o"` or `"anthropic/claude-3-5-sonnet"`. Passing OpenAI's native format (e.g. `"gpt-4o"`) will result in a model-not-found error.
+</Note>
+
+<Tip>
+  Store your base config (API key and base URL) in a shared dictionary or factory function so you can instantiate multiple `ChatOpenAI` objects without repeating yourself. This makes it easy to switch all your chains to a different provider by updating one variable.
+</Tip>

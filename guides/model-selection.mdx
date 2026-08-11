@@ -1,0 +1,188 @@
+---
+title: "Choosing the Right Model for Your Portrix Workload"
+sidebarTitle: "Model Selection"
+description: "Compare speed, cost, and capability across 400+ models on Portrix. Learn how to pick the right model for chat, reasoning, embeddings, and vision tasks."
+---
+
+Choosing the right model is about balancing cost, latency, capability, and context window size for your specific workload. With 400+ models available on Portrix, the options can feel overwhelming — this guide cuts through the noise so you can make a confident decision and start iterating fast.
+
+## Model ID format
+
+Every model on Portrix is identified by a `{provider}/{model-name}` string. You pass this string as the `model` parameter in any request:
+
+```
+openai/gpt-4o
+anthropic/claude-3-5-sonnet
+google/gemini-2.0-flash
+mistral/mistral-large
+```
+
+The provider prefix routes the request to the correct backend automatically — no additional configuration required.
+
+## Specifying the model via header
+
+If your HTTP client or framework does not support modifying the request body, you can pass the model ID in the `x-portrix-model` header instead of the `model` field. The header takes precedence when both are present:
+
+```bash
+curl https://api.portrix.ai/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "x-portrix-model: anthropic/claude-3-5-sonnet" \
+  -d '{"messages": [{"role": "user", "content": "Hello!"}]}'
+```
+
+This is particularly useful when proxying requests through middleware that cannot rewrite the body, or when building multi-tenant systems where the calling layer selects the model on behalf of the application.
+
+## By use case
+
+<Tabs>
+  <Tab title="Chat & Reasoning">
+    These models excel at general-purpose conversation, instruction following, and multi-step reasoning tasks.
+
+    | Model | Strengths |
+    |---|---|
+    | `openai/gpt-4o` | Versatile, fast, strong reasoning and instruction following |
+    | `anthropic/claude-3-5-sonnet` | Nuanced writing, long-form reasoning, low hallucination rate |
+    | `google/gemini-2.0-flash` | Very low latency, cost-efficient for high-volume workloads |
+    | `mistral/mistral-large` | Strong multilingual support, competitive European data residency |
+
+    ```python
+    response = client.chat.completions.create(
+        model="openai/gpt-4o",
+        messages=[{"role": "user", "content": "Explain transformer attention in simple terms."}],
+    )
+    ```
+  </Tab>
+  <Tab title="Long Context">
+    Use these models when your input — documents, codebases, transcripts — exceeds typical context limits.
+
+    | Model | Context Window |
+    |---|---|
+    | `anthropic/claude-3-5-sonnet` | 200,000 tokens |
+    | `google/gemini-1.5-pro` | 1,000,000 tokens |
+
+    ```python
+    with open("long_document.txt") as f:
+        document = f.read()
+
+    response = client.chat.completions.create(
+        model="google/gemini-1.5-pro",
+        messages=[
+            {"role": "user", "content": f"Summarise this document:\n\n{document}"}
+        ],
+    )
+    ```
+  </Tab>
+  <Tab title="Embeddings">
+    Embeddings convert text into dense vectors for semantic search, clustering, and retrieval-augmented generation (RAG).
+
+    | Model | Dimensions | Best For |
+    |---|---|---|
+    | `openai/text-embedding-3-small` | 1,536 | Cost-efficient, high-throughput indexing |
+    | `openai/text-embedding-3-large` | 3,072 | Highest accuracy retrieval tasks |
+
+    ```python
+    response = client.embeddings.create(
+        model="openai/text-embedding-3-small",
+        input="Portrix is a unified AI gateway.",
+    )
+
+    vector = response.data[0].embedding
+    ```
+  </Tab>
+  <Tab title="Vision">
+    Vision models accept image inputs alongside text, enabling document understanding, screenshot analysis, and multimodal reasoning.
+
+    | Model | Notes |
+    |---|---|
+    | `openai/gpt-4o` | Strong OCR, diagram interpretation, and image Q&A |
+    | `google/gemini-2.0-flash` | Fast and cost-efficient for image classification at scale |
+
+    ```python
+    response = client.chat.completions.create(
+        model="openai/gpt-4o",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "What is in this image?"},
+                    {"type": "image_url", "image_url": {"url": "https://example.com/chart.png"}},
+                ],
+            }
+        ],
+    )
+    ```
+  </Tab>
+  <Tab title="Coding">
+    These models perform strongly on code generation, debugging, and technical explanation tasks.
+
+    | Model | Strengths |
+    |---|---|
+    | `openai/o3-mini` | Deep reasoning for hard algorithmic and engineering problems |
+    | `anthropic/claude-3-5-sonnet` | Clean, well-commented code with excellent test generation |
+
+    ```python
+    response = client.chat.completions.create(
+        model="anthropic/claude-3-5-sonnet",
+        messages=[
+            {"role": "user", "content": "Write a Python function to binary-search a sorted list."}
+        ],
+    )
+    ```
+  </Tab>
+</Tabs>
+
+## Cost vs quality tradeoffs
+
+Use this table as a starting point — actual pricing is available in your [Portrix dashboard](https://app.portrix.ai).
+
+| Model | Provider | Relative Cost | Relative Speed | Best For |
+|---|---|---|---|---|
+| `google/gemini-2.0-flash` | Google | $ | ⚡⚡⚡ | High-volume, latency-sensitive apps |
+| `mistral/mistral-large` | Mistral | $ | ⚡⚡⚡ | Multilingual and EU-resident workloads |
+| `openai/gpt-4o` | OpenAI | $$ | ⚡⚡ | General-purpose production workloads |
+| `google/gemini-1.5-pro` | Google | $$ | ⚡⚡ | Very long document processing |
+| `anthropic/claude-3-5-sonnet` | Anthropic | $$ | ⚡⚡ | Writing, reasoning, low hallucination |
+| `openai/o3-mini` | OpenAI | $$$ | ⚡ | Complex coding and math reasoning |
+| `openai/text-embedding-3-small` | OpenAI | $ | ⚡⚡⚡ | Embedding at scale |
+| `openai/text-embedding-3-large` | OpenAI | $$ | ⚡⚡ | High-precision semantic retrieval |
+
+## Listing all available models
+
+Retrieve the full, live list of models available to your account at any time:
+
+<CodeGroup>
+
+```python Python
+models = client.models.list()
+
+for model in models.data:
+    print(model.id)
+```
+
+```bash cURL
+curl https://api.portrix.ai/v1/models \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+</CodeGroup>
+
+The response is a standard OpenAI-compatible `ModelList` object. Each entry includes the model ID, provider, and any capability flags your account has access to.
+
+## Using model routing
+
+If you want Portrix to select the best model automatically based on a routing strategy, set the `x-portrix-route` header instead of specifying a model directly:
+
+```bash
+curl https://api.portrix.ai/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "x-portrix-route: cheapest" \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "Hello!"}]}'
+```
+
+Supported routing strategies include `cheapest`, `fastest`, and `balanced`. See the Fallbacks & Load Balancing guide for the full routing reference.
+
+<Tip>
+  Start with a cheaper, faster model like `google/gemini-2.0-flash` during development and evaluation. Once you've validated your prompts and logic, benchmark against a more capable model to decide whether the quality improvement justifies the cost increase.
+</Tip>

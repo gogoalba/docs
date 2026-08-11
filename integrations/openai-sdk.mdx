@@ -1,0 +1,139 @@
+---
+title: "Use the OpenAI SDK with Portrix to Access 400+ Models"
+sidebarTitle: "OpenAI SDK"
+description: "Portrix is a drop-in replacement for the OpenAI API. Change two lines of code to route all OpenAI SDK calls through Portrix and access 400+ models."
+---
+
+Because Portrix implements the full OpenAI API specification, the official OpenAI SDKs work with Portrix out of the box — no monkey-patching, no custom wrappers. Point the client at Portrix's base URL, swap in your Portrix API key, and every model on the platform becomes available through the same interface you already know.
+
+## Python
+
+Install the `openai` package if you haven't already:
+
+```bash
+pip install openai
+```
+
+Change the two highlighted lines to redirect all SDK calls through Portrix:
+
+```python
+from openai import OpenAI
+
+# Before
+client = OpenAI(
+    api_key="sk-...",  # [!code --]
+)  # [!code --]
+
+# After
+client = OpenAI(
+    api_key="your-portrix-api-key",  # [!code ++]
+    base_url="https://api.portrix.ai/v1",  # [!code ++]
+)
+
+response = client.chat.completions.create(
+    model="anthropic/claude-3-5-sonnet",
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+
+print(response.choices[0].message.content)
+```
+
+## JavaScript / TypeScript
+
+Install the `openai` npm package if you haven't already:
+
+```bash
+npm install openai
+```
+
+Apply the same two-line change in your TypeScript or JavaScript project:
+
+```typescript
+import OpenAI from "openai";
+
+// Before
+const client = new OpenAI({
+  apiKey: "sk-...",  // [!code --]
+});  // [!code --]
+
+// After
+const client = new OpenAI({
+  apiKey: process.env.PORTRIX_API_KEY,  // [!code ++]
+  baseURL: "https://api.portrix.ai/v1",  // [!code ++]
+});
+
+const response = await client.chat.completions.create({
+  model: "openai/gpt-4o",
+  messages: [{ role: "user", content: "Hello!" }],
+});
+
+console.log(response.choices[0].message.content);
+```
+
+## What changes and what doesn't
+
+| Parameter | OpenAI | Portrix |
+|---|---|---|
+| Base URL | `https://api.openai.com/v1` | `https://api.portrix.ai/v1` |
+| API key | OpenAI secret key (`sk-...`) | Portrix API key |
+| Model names | `gpt-4o`, `gpt-3.5-turbo`, etc. | `provider/model` format, e.g. `openai/gpt-4o` |
+| All other parameters | — | Unchanged |
+| Response format | OpenAI response object | Unchanged |
+
+<Note>
+  Model names use the `provider/model` format in Portrix — for example, `openai/gpt-4o`, `anthropic/claude-3-5-sonnet`, or `google/gemini-2.0-flash`. Pass these directly as the `model` field in your request.
+</Note>
+
+## Migrating existing code
+
+<Steps>
+  <Step title="Install or update the OpenAI SDK">
+    Make sure you are on a recent version of the SDK. Portrix is compatible with `openai >= 1.0.0` for Python and `openai >= 4.0.0` for Node.js.
+
+    ```bash
+    pip install --upgrade openai   # Python
+    npm install openai@latest      # Node.js
+    ```
+  </Step>
+
+  <Step title="Set your Portrix API key">
+    Store your key in an environment variable so it never appears in source code:
+
+    ```bash
+    export PORTRIX_API_KEY="your-portrix-api-key"
+    ```
+
+    Add this to your `.env` file for local development and configure it as a secret in your deployment environment.
+  </Step>
+
+  <Step title="Update the client initialization">
+    Replace your existing client constructor with the Portrix-configured version:
+
+    <CodeGroup>
+      ```python Python
+      import os
+      from openai import OpenAI
+
+      client = OpenAI(
+          api_key=os.environ["PORTRIX_API_KEY"],
+          base_url="https://api.portrix.ai/v1",
+      )
+      ```
+
+      ```typescript TypeScript
+      import OpenAI from "openai";
+
+      const client = new OpenAI({
+        apiKey: process.env.PORTRIX_API_KEY,
+        baseURL: "https://api.portrix.ai/v1",
+      });
+      ```
+    </CodeGroup>
+
+    Everything else in your codebase — method calls, parameters, response parsing — stays exactly the same.
+  </Step>
+</Steps>
+
+<Tip>
+  Use an environment variable for the base URL as well as the API key. Set `OPENAI_BASE_URL=https://api.portrix.ai/v1` and `OPENAI_API_KEY=$PORTRIX_API_KEY` locally, and the OpenAI SDK will pick them up automatically — letting you switch between OpenAI and Portrix without touching a single line of application code.
+</Tip>

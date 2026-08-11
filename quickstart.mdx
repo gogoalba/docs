@@ -1,0 +1,120 @@
+---
+title: "Portrix Quickstart: Make Your First AI API Request"
+sidebarTitle: "Quickstart"
+description: "Learn how to send your first AI request through Portrix. Get an API key, install the SDK, and call 400+ models in under 5 minutes."
+---
+
+This page walks you through sending your first AI request via Portrix. By the end, you'll have a working API call that routes through the Portrix gateway to any model in the catalog — all using the same OpenAI SDK you may already have installed.
+
+## Prerequisites
+
+Before you start, make sure you have:
+
+- A Portrix account — sign up for free at [app.portrix.ai](https://app.portrix.ai)
+- Basic familiarity with REST APIs or the OpenAI SDK in Python or TypeScript
+
+<Tip>
+  Your existing OpenAI code works — just change the base URL and use a Portrix API key.
+</Tip>
+
+## Steps
+
+<Steps>
+  <Step title="Create your account">
+    Go to [app.portrix.ai](https://app.portrix.ai) and sign up for a free account. After you verify your email and complete onboarding, you'll land in the Portrix dashboard. Your API keys are under **Settings → API Keys** in the left sidebar.
+  </Step>
+
+  <Step title="Get your API key">
+    In the dashboard, navigate to **Settings → API Keys** and click **Create new key**. Give your key a descriptive label (for example, `development` or `my-app-prod`), then click **Create**. Copy the key immediately — it's shown only once. Store it somewhere safe, such as a password manager or secrets vault.
+  </Step>
+
+  <Step title="Install the SDK">
+    Portrix is OpenAI-compatible, so you use the standard `openai` package. Install it with your preferred package manager:
+
+    <CodeGroup>
+      ```bash npm
+      npm install openai
+      ```
+
+      ```bash yarn
+      yarn add openai
+      ```
+
+      ```bash pnpm
+      pnpm add openai
+      ```
+
+      ```bash pip
+      pip install openai
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Send your first request">
+    Point the OpenAI SDK at the Portrix base URL and use your Portrix API key. Then choose any model from the catalog using the `provider/model-name` format.
+
+    <CodeGroup>
+      ```python Python
+      from openai import OpenAI
+
+      client = OpenAI(
+          api_key="YOUR_PORTRIX_API_KEY",
+          base_url="https://api.portrix.ai/v1",
+      )
+
+      response = client.chat.completions.create(
+          model="openai/gpt-4o",
+          messages=[
+              {"role": "user", "content": "Explain what Portrix does in one sentence."}
+          ],
+      )
+
+      print(response.choices[0].message.content)
+      ```
+
+      ```typescript TypeScript / Node.js
+      import OpenAI from "openai";
+
+      const client = new OpenAI({
+        apiKey: "YOUR_PORTRIX_API_KEY",
+        baseURL: "https://api.portrix.ai/v1",
+      });
+
+      const response = await client.chat.completions.create({
+        model: "openai/gpt-4o",
+        messages: [
+          { role: "user", content: "Explain what Portrix does in one sentence." },
+        ],
+      });
+
+      console.log(response.choices[0].message.content);
+      ```
+    </CodeGroup>
+
+    Run the code and you should see a response printed to your terminal. That request traveled through the Portrix gateway and was routed to OpenAI's GPT-4o on your behalf.
+  </Step>
+
+  <Step title="Explore models">
+    Now that your integration is working, try swapping the `model` field to any other model in the Portrix catalog. The rest of your code stays exactly the same.
+
+    ```python Python
+    # Try any of these models — just change the model field
+    model = "anthropic/claude-3-5-sonnet"
+    model = "google/gemini-2.0-flash"
+    model = "mistral/mistral-large-latest"
+    ```
+
+    Browse the full list of available models in the [Supported Models](/help/supported-models) reference.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Model Selection Guide" icon="layer-group" href="/help/supported-models">
+    Browse all 400+ models available through Portrix and learn how to choose the right model for your use case.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore the full Portrix API reference, including streaming, tool use, and advanced routing options.
+  </Card>
+</CardGroup>

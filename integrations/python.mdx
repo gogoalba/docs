@@ -1,0 +1,241 @@
+---
+title: "Connect to Portrix from Python Using the OpenAI Library"
+sidebarTitle: "Python"
+description: "Integrate Portrix into Python applications using the openai library or raw HTTP requests. Access 400+ models with minimal code changes."
+---
+
+You can integrate Portrix into Python projects using the `openai` library (recommended), the `requests` library for lightweight HTTP calls, or `httpx` for async-first applications. All three approaches use the same base URL and Bearer token authentication, so you can choose whichever fits your stack.
+
+## Installation
+
+Install the `openai` library to get the recommended client experience. Add `requests` or `httpx` if you prefer a lower-level HTTP approach.
+
+```bash
+pip install openai            # recommended
+pip install requests          # optional — low-level HTTP
+pip install httpx             # optional — async HTTP
+pip install python-dotenv     # optional — .env file support
+```
+
+## Using the openai library
+
+Create an `OpenAI` client pointed at Portrix's base URL, then call it exactly as you would the standard OpenAI client:
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+
+response = client.chat.completions.create(
+    model="anthropic/claude-3-5-sonnet",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Explain quantum entanglement in two sentences."},
+    ],
+    temperature=0.7,
+    max_tokens=256,
+)
+
+print(response.choices[0].message.content)
+```
+
+## Using environment variables
+
+Keep your API key out of source code by loading it from the environment or a `.env` file:
+
+```python
+import os
+from openai import OpenAI
+from dotenv import load_dotenv  # pip install python-dotenv
+
+# Load variables from a local .env file (development only)
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+```
+
+Create a `.env` file at your project root (and add it to `.gitignore`):
+
+```bash
+PORTRIX_API_KEY=your-portrix-api-key
+```
+
+<Warning>
+  Never commit your API key to version control. Use `.env` files locally and your platform's secret manager (e.g. AWS Secrets Manager, Doppler, Vercel environment variables) in production.
+</Warning>
+
+## Using requests
+
+Use `requests` for scripts or environments where you prefer a plain HTTP call without the OpenAI SDK:
+
+```python
+import os
+import requests
+
+url = "https://api.portrix.ai/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {os.environ['PORTRIX_API_KEY']}",
+    "Content-Type": "application/json",
+}
+payload = {
+    "model": "google/gemini-2.0-flash",
+    "messages": [
+        {"role": "user", "content": "What is the capital of France?"},
+    ],
+}
+
+response = requests.post(url, headers=headers, json=payload)
+response.raise_for_status()
+
+data = response.json()
+print(data["choices"][0]["message"]["content"])
+```
+
+## Using httpx
+
+Use `httpx.AsyncClient` for async applications such as FastAPI services or async scripts:
+
+```python
+import os
+import asyncio
+import httpx
+
+async def chat(prompt: str) -> str:
+    url = "https://api.portrix.ai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {os.environ['PORTRIX_API_KEY']}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": "mistral/mistral-large",
+        "messages": [{"role": "user", "content": prompt}],
+    }
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        response = await client.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        return data["choices"][0]["message"]["content"]
+
+async def main():
+    result = await chat("Summarize the history of the internet.")
+    print(result)
+
+asyncio.run(main())
+```
+
+## Streaming in Python
+
+Enable streaming by passing `stream=True` to the `openai` client. Iterate over the response chunks to print tokens as they arrive:
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+
+with client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[{"role": "user", "content": "Write a haiku about Python."}],
+    stream=True,
+) as stream:
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta is not None:
+            print(delta, end="", flush=True)
+
+print()  # newline after stream ends
+```
+
+## Error handling
+
+Wrap API calls in a `try/except` block to handle rate limits, invalid requests, and other API errors gracefully:
+
+```python
+import os
+from openai import OpenAI, APIError, RateLimitError, APIStatusError
+
+client = OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+
+try:
+    response = client.chat.completions.create(
+        model="anthropic/claude-3-5-sonnet",
+        messages=[{"role": "user", "content": "Hello!"}],
+    )
+    print(response.choices[0].message.content)
+
+except RateLimitError as e:
+    print(f"Rate limit exceeded — back off and retry. Details: {e}")
+
+except APIStatusError as e:
+    print(f"API returned status {e.status_code}: {e.message}")
+
+except APIError as e:
+    print(f"API error: {e}")
+```
+
+## Complete example
+
+The following helper class wraps Portrix with automatic retry logic using exponential backoff:
+
+```python
+import os
+import time
+from openai import OpenAI, RateLimitError, APIError
+
+class PortrixClient:
+    def __init__(self, model: str = "openai/gpt-4o", max_retries: int = 3):
+        self.model = model
+        self.max_retries = max_retries
+        self._client = OpenAI(
+            api_key=os.environ["PORTRIX_API_KEY"],
+            base_url="https://api.portrix.ai/v1",
+        )
+
+    def chat(self, prompt: str, system: str = "You are a helpful assistant.") -> str:
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ]
+
+        for attempt in range(self.max_retries):
+            try:
+                response = self._client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                )
+                return response.choices[0].message.content
+
+            except RateLimitError:
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                print(f"Rate limited. Retrying in {wait}s...")
+                time.sleep(wait)
+
+            except APIError as e:
+                raise RuntimeError(f"Portrix API error: {e}") from e
+
+        raise RuntimeError("Max retries exceeded.")
+
+
+if __name__ == "__main__":
+    client = PortrixClient(model="anthropic/claude-3-5-sonnet")
+    answer = client.chat("What are three benefits of using a unified AI gateway?")
+    print(answer)
+```
+
+<Tip>
+  Swap the `model` argument when constructing `PortrixClient` to change providers without touching any other code. This makes A/B testing different models straightforward.
+</Tip>

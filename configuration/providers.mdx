@@ -1,0 +1,80 @@
+---
+title: "Configure AI Provider API Keys in Your Portrix Account"
+sidebarTitle: "Providers"
+description: "Connect your own API keys from OpenAI, Anthropic, Google, and other providers to Portrix. Route requests through your accounts for billing and control."
+---
+
+Portrix can route requests through your own provider API keys, letting you consolidate billing, apply your own rate limits, and use existing provider credits — all without changing your application code.
+
+## How provider configuration works
+
+By default, Portrix uses its shared provider keys to fulfill your requests. When you add your own provider API keys to your Portrix account, Portrix routes your requests through your accounts instead. This means usage is billed directly to you by the upstream provider, and any existing credits, volume discounts, or quota increases you have with that provider apply automatically.
+
+This model gives you the best of both worlds: the simplicity of a single unified API with the control and cost transparency of direct provider relationships.
+
+## Adding provider keys
+
+<Steps>
+  <Step title="Open the Portrix dashboard">
+    Go to [app.portrix.ai](https://app.portrix.ai) and sign in to your account.
+  </Step>
+  <Step title="Navigate to Settings > Providers">
+    Click your account avatar in the top-right corner, then select **Settings**. Choose **Providers** from the left navigation menu.
+  </Step>
+  <Step title="Add a new provider">
+    Click the **Add Provider** button in the top-right corner of the Providers page.
+  </Step>
+  <Step title="Select the provider">
+    Choose the provider you want to configure from the list — for example, OpenAI, Anthropic, Google, or Mistral.
+  </Step>
+  <Step title="Enter your API key">
+    Paste your API key for that provider into the key field. You can find your API keys in each provider's own dashboard.
+  </Step>
+  <Step title="Save the configuration">
+    Click **Save**. Portrix will validate the key and confirm the connection is active.
+  </Step>
+</Steps>
+
+## Supported providers
+
+The following providers are supported for bring-your-own-key configuration:
+
+| Provider     | Model prefix    | Status      |
+|--------------|-----------------|-------------|
+| OpenAI       | `openai/`       | Available   |
+| Anthropic    | `anthropic/`    | Available   |
+| Google AI    | `google/`       | Available   |
+| Mistral      | `mistral/`      | Available   |
+| Meta         | `meta/`         | Available   |
+| Cohere       | `cohere/`       | Available   |
+| Groq         | `groq/`         | Available   |
+
+<Warning>
+  Treat provider API keys with the same care as passwords. Portrix encrypts all stored keys at rest using AES-256 encryption and never exposes them in plaintext after the initial save.
+</Warning>
+
+## Testing provider connections
+
+After adding a key, use the **Test Connection** button on the Providers settings page to send a small test request through your configured key. Portrix will show you a success confirmation or a detailed error message if something is misconfigured.
+
+You can also verify a connection by making a simple API call and inspecting the response headers. The `x-portrix-provider` response header indicates which upstream provider fulfilled the request.
+
+```bash
+curl https://api.portrix.ai/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_PORTRIX_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o-mini",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "max_tokens": 10
+  }'
+```
+
+## Priority and fallback
+
+When you configure multiple API keys for the same provider — for example, several OpenAI keys across different projects — Portrix can distribute traffic between them in two modes:
+
+- **Round-robin**: Requests are distributed evenly across all active keys for that provider.
+- **Failover**: Portrix uses the primary key and automatically switches to secondary keys if the primary returns an error or hits a rate limit.
+
+Configure this behavior per-provider on the **Settings > Providers** page. You can also combine provider-level fallback with Portrix's cross-provider fallback routing to build highly resilient request pipelines.

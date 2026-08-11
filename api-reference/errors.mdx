@@ -1,0 +1,174 @@
+---
+title: "Portrix API Error Codes, Status Codes, and Retries"
+sidebarTitle: "Errors"
+description: "Complete reference for Portrix API HTTP status codes and error response format. Covers 4xx client errors, 5xx server/provider errors, and retry guidance."
+---
+
+When a request fails, Portrix returns a standard error response body that follows the OpenAI error format. Every error response includes a human-readable `message`, a machine-readable `type` string, and a specific `code` you can use to handle errors programmatically. The HTTP status code tells you the broad category of the failure.
+
+## Error Response Format
+
+All error responses have the following JSON structure:
+
+```json
+{
+  "error": {
+    "message": "Invalid API key provided.",
+    "type": "invalid_request_error",
+    "code": "invalid_api_key"
+  }
+}
+```
+
+| Field           | Type     | Description                                                                   |
+|-----------------|----------|-------------------------------------------------------------------------------|
+| `error.message` | `string` | A human-readable description of what went wrong.                              |
+| `error.type`    | `string` | A broad category string. See [Error Types](#error-types) below.               |
+| `error.code`    | `string` | A specific machine-readable code for programmatic handling. May be `null`.    |
+
+## HTTP Status Codes
+
+| Status Code                  | Meaning                                                                                                        |
+|------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `400 Bad Request`            | The request body is malformed, missing required fields, or contains invalid parameter values.                  |
+| `401 Unauthorized`           | The `Authorization` header is missing or contains an invalid, expired, or revoked API key.                     |
+| `403 Forbidden`              | The API key is valid but does not have permission to access the requested model or endpoint.                    |
+| `404 Not Found`              | The requested model does not exist or the endpoint path is incorrect.                                          |
+| `429 Too Many Requests`      | You have exceeded your rate limit. The response includes a `Retry-After` header with the wait time in seconds. |
+| `500 Internal Server Error`  | An unexpected error occurred within Portrix. These are rare — contact support if they persist.                 |
+| `502 Bad Gateway`            | The upstream model provider returned an error or an unexpected response.                                       |
+| `503 Service Unavailable`    | The upstream provider is temporarily unavailable or undergoing maintenance.                                    |
+
+## Error Types
+
+| Type String             | Description                                                                                    |
+|-------------------------|------------------------------------------------------------------------------------------------|
+| `invalid_request_error` | The request was malformed — wrong parameter types, missing required fields, or invalid values. |
+| `authentication_error`  | The API key is missing, invalid, expired, or revoked.                                          |
+| `permission_error`      | The key is valid but lacks the required permissions for this operation.                        |
+| `not_found_error`       | The model or endpoint you requested does not exist.                                            |
+| `rate_limit_error`      | Your request was rejected because you exceeded a rate or quota limit.                          |
+| `api_error`             | An unexpected internal Portrix error occurred.                                                 |
+| `provider_error`        | The upstream model provider returned an error or is temporarily unavailable.                   |
+
+## Handling Errors
+
+Use your SDK's built-in error handling to catch and inspect API errors. The examples below show how to check the HTTP status code and respond accordingly.
+
+<CodeGroup>
+```python Python
+import os
+import openai
+
+client = openai.OpenAI(
+    api_key=os.environ["PORTRIX_API_KEY"],
+    base_url="https://api.portrix.ai/v1",
+)
+
+try:
+    response = client.chat.completions.create(
+        model="openai/gpt-4o",
+        messages=[{"role": "user", "content": "Hello!"}],
+    )
+    print(response.choices[0].message.content)
+
+except openai.APIStatusError as e:
+    print(f"HTTP status: {e.status_code}")
+    print(f"Error type:  {e.body.get('error', {}).get('type')}")
+    print(f"Message:     {e.message}")
+
+    if e.status_code == 401:
+        print("Check your PORTRIX_API_KEY environment variable.")
+    elif e.status_code == 429:
+        retry_after = e.response.headers.get("Retry-After", "unknown")
+        print(f"Rate limited. Retry after {retry_after} seconds.")
+    elif e.status_code >= 500:
+        print("Server or provider error — consider retrying with backoff.")
+
+except openai.APIConnectionError as e:
+    print(f"Connection error: {e}")
+```
+
+```typescript TypeScript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.PORTRIX_API_KEY,
+  baseURL: "https://api.portrix.ai/v1",
+});
+
+try {
+  const response = await client.chat.completions.create({
+    model: "openai/gpt-4o",
+    messages: [{ role: "user", content: "Hello!" }],
+  });
+  console.log(response.choices[0].message.content);
+} catch (error) {
+  if (error instanceof OpenAI.APIError) {
+    console.error(`Status:  ${error.status}`);
+    console.error(`Type:    ${(error as any).error?.type}`);
+    console.error(`Message: ${error.message}`);
+
+    if (error.status === 401) {
+      console.error("Check your PORTRIX_API_KEY environment variable.");
+    } else if (error.status === 429) {
+      const retryAfter = error.headers?.["retry-after"] ?? "unknown";
+      console.error(`Rate limited. Retry after ${retryAfter} seconds.`);
+    } else if (error.status >= 500) {
+      console.error("Server or provider error — consider retrying with backoff.");
+    }
+  } else {
+    throw error;
+  }
+}
+```
+</CodeGroup>
+
+## Retry Guidance
+
+Not every error is worth retrying. Use the table below to decide whether to retry automatically.
+
+| Status Code | Retryable? | Notes                                                                                       |
+|-------------|------------|---------------------------------------------------------------------------------------------|
+| `400`       | ❌ No      | Fix the request body before retrying.                                                       |
+| `401`       | ❌ No      | Fix the API key before retrying.                                                            |
+| `403`       | ❌ No      | Request elevated permissions or use a different key.                                        |
+| `404`       | ❌ No      | Fix the model ID or endpoint path.                                                          |
+| `429`       | ✅ Yes     | Wait for the number of seconds in the `Retry-After` response header, then retry.            |
+| `500`       | ⚠️ Maybe  | Retry once after a short delay. If the error persists, contact support.                     |
+| `502`       | ✅ Yes     | The upstream provider returned an error. Retry with exponential backoff.                    |
+| `503`       | ✅ Yes     | The upstream provider is temporarily unavailable. Retry with exponential backoff.           |
+
+For retryable errors, use exponential backoff with jitter to avoid thundering-herd problems. The example below shows a simple implementation:
+
+```python Python
+import time
+import random
+import openai
+
+def call_with_backoff(client, **kwargs):
+    max_retries = 5
+    base_delay = 1.0  # seconds
+
+    for attempt in range(max_retries):
+        try:
+            return client.chat.completions.create(**kwargs)
+        except openai.APIStatusError as e:
+            retryable = e.status_code in (429, 502, 503)
+            last_attempt = attempt == max_retries - 1
+
+            if not retryable or last_attempt:
+                raise
+
+            if e.status_code == 429:
+                delay = float(e.response.headers.get("Retry-After", base_delay))
+            else:
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+
+            print(f"Attempt {attempt + 1} failed ({e.status_code}). Retrying in {delay:.1f}s...")
+            time.sleep(delay)
+```
+
+<Tip>
+  When you receive a `502` or `503` error, consider also using the `x-portrix-fallback` header to automatically route the retry to an alternative model. See the [Overview](/api-reference/overview#portrix-specific-headers) for details.
+</Tip>

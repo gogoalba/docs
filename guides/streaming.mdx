@@ -1,0 +1,171 @@
+---
+title: "How to Stream AI Responses Using Server-Sent Events"
+sidebarTitle: "Streaming"
+description: "Enable token-by-token streaming from any Portrix-connected model using the standard OpenAI streaming API. Works with all 400+ models and providers."
+---
+
+Streaming lets you display AI responses word-by-word as they are generated, so users see output immediately instead of staring at a spinner for several seconds. Portrix normalises streaming across all 400+ connected models to OpenAI's Server-Sent Events (SSE) format, which means your streaming code works identically regardless of which underlying provider serves the request.
+
+## Enabling streaming
+
+Set `stream: true` in the request body. That's the only change required:
+
+```python
+response = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[{"role": "user", "content": "Write a haiku about APIs."}],
+    stream=True,   # <-- enable streaming
+)
+```
+
+## Python streaming example
+
+The `openai` SDK returns an iterator when `stream=True`. Iterate over the chunks and print each delta as it arrives:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://api.portrix.ai/v1",
+)
+
+stream = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[{"role": "user", "content": "Explain how GPUs accelerate deep learning."}],
+    stream=True,
+)
+
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta is not None:
+        print(delta, end="", flush=True)
+
+print()  # newline after stream ends
+```
+
+The `flush=True` argument ensures each token is written to stdout immediately rather than buffered — important for terminal output.
+
+## JavaScript / TypeScript streaming example
+
+The `openai` npm SDK supports async iteration over streaming responses:
+
+```typescript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "YOUR_API_KEY",
+  baseURL: "https://api.portrix.ai/v1",
+});
+
+const stream = await client.chat.completions.create({
+  model: "openai/gpt-4o",
+  messages: [{ role: "user", content: "Explain how GPUs accelerate deep learning." }],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  const delta = chunk.choices[0]?.delta?.content;
+  if (delta) {
+    process.stdout.write(delta);
+  }
+}
+
+process.stdout.write("\n");
+```
+
+In a browser or Node.js server context, write each `delta` to your UI component or response stream instead of `process.stdout`.
+
+## cURL streaming example
+
+Use the `--no-buffer` flag to disable curl's output buffering and see tokens as they arrive in your terminal:
+
+```bash
+curl https://api.portrix.ai/v1/chat/completions \
+  --no-buffer \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      {"role": "user", "content": "Count from 1 to 10, one number per line."}
+    ],
+    "stream": true
+  }'
+```
+
+## Handling stream events
+
+Each event in the SSE stream is a line starting with `data: ` followed by a JSON object. The final event is the literal string `data: [DONE]`.
+
+A typical stream looks like this:
+
+```
+data: {"id":"chatcmpl-abc","choices":[{"delta":{"role":"assistant"},"index":0}]}
+
+data: {"id":"chatcmpl-abc","choices":[{"delta":{"content":"Hello"},"index":0}]}
+
+data: {"id":"chatcmpl-abc","choices":[{"delta":{"content":" world"},"index":0}]}
+
+data: {"id":"chatcmpl-abc","choices":[{"delta":{},"finish_reason":"stop","index":0}]}
+
+data: [DONE]
+```
+
+Key fields in each chunk:
+
+| Field | Description |
+|---|---|
+| `choices[0].delta.content` | The token(s) in this chunk — may be empty in the first and last chunks |
+| `choices[0].delta.role` | Only present in the first chunk, always `"assistant"` |
+| `choices[0].finish_reason` | `null` during generation; `"stop"`, `"length"`, or `"tool_calls"` on the final chunk |
+
+## Error handling
+
+Errors can surface at two different points in a streaming request:
+
+**Before the stream starts** — if the request is malformed, authentication fails, or the model is unavailable, Portrix returns a standard non-200 HTTP response with a JSON error body. Handle this by checking the HTTP status code before iterating.
+
+**Mid-stream** — if the provider encounters an error after generation has begun, an error event is injected into the stream:
+
+```
+data: {"error":{"message":"Provider error: upstream timeout","type":"provider_error"}}
+```
+
+A robust streaming handler should check for an `error` key in each chunk:
+
+```python
+for chunk in stream:
+    if hasattr(chunk, "error"):
+        raise RuntimeError(f"Stream error: {chunk.error['message']}")
+
+    delta = chunk.choices[0].delta.content
+    if delta is not None:
+        print(delta, end="", flush=True)
+```
+
+## Streaming with fallbacks
+
+Fallbacks work transparently with streaming. If the primary model fails before the stream starts, Portrix switches to the next model in your fallback chain and begins streaming from there — your code sees a seamless stream with no error:
+
+```python
+stream = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[{"role": "user", "content": "Tell me a short story."}],
+    stream=True,
+    extra_headers={
+        "x-portrix-fallback": "anthropic/claude-3-5-sonnet, google/gemini-2.0-flash",
+    },
+)
+
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta is not None:
+        print(delta, end="", flush=True)
+```
+
+See the [Fallbacks & Load Balancing guide](/guides/fallbacks-and-load-balancing) for full configuration options.
+
+<Note>
+  Streaming is supported for all chat completion models on Portrix. Embeddings endpoints (`/v1/embeddings`) do not support streaming, and a small number of legacy completion models may return the full response in a single chunk even when `stream: true` is set.
+</Note>

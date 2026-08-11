@@ -1,0 +1,114 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "luma",
+  "name": "Portrix",
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#818CF8",
+    "dark": "#4F46E5"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/gateway",
+              "concepts/models",
+              "concepts/routing",
+              "concepts/protocols"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/first-request",
+              "guides/model-selection",
+              "guides/fallbacks-and-load-balancing",
+              "guides/web-search",
+              "guides/streaming"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/openai-sdk",
+              "integrations/python",
+              "integrations/javascript",
+              "integrations/langchain",
+              "integrations/vercel-ai"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/providers",
+              "configuration/rate-limits",
+              "configuration/environment-variables"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "help/faq",
+              "help/troubleshooting",
+              "help/supported-models"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/authentication",
+              "api-reference/errors"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/chat-completions",
+              "api-reference/completions",
+              "api-reference/embeddings",
+              "api-reference/models"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@portrix.ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "https://app.portrix.ai"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/portrix",
+      "github": "https://github.com/portrix"
+    }
+  }
+}

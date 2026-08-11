@@ -1,0 +1,178 @@
+---
+title: "Use the Vercel AI SDK to Stream Portrix Model Responses"
+sidebarTitle: "Vercel AI SDK"
+description: "Integrate Portrix into Next.js and Vercel applications using the Vercel AI SDK. Stream responses with useChat and access all 400+ models."
+---
+
+The Vercel AI SDK's OpenAI provider accepts a custom `baseURL`, which means you can point it at Portrix and gain access to all 400+ models through the same `streamText`, `generateText`, and `useChat` interface you already know. Streaming, tool calling, and structured output work without any additional configuration because Portrix normalises every model's response to the OpenAI SSE format.
+
+## Installation
+
+<CodeGroup>
+  ```bash npm
+  npm install ai @ai-sdk/openai
+  ```
+
+  ```bash yarn
+  yarn add ai @ai-sdk/openai
+  ```
+
+  ```bash pnpm
+  pnpm add ai @ai-sdk/openai
+  ```
+</CodeGroup>
+
+## Configuration
+
+Use `createOpenAI` to create a custom provider instance that routes all requests through Portrix. Define this once and import it wherever you need a model:
+
+```typescript
+// lib/portrix.ts
+import { createOpenAI } from "@ai-sdk/openai";
+
+export const portrix = createOpenAI({
+  baseURL: "https://api.portrix.ai/v1",
+  apiKey: process.env.PORTRIX_API_KEY,
+});
+```
+
+You can now use `portrix("provider/model")` anywhere the Vercel AI SDK accepts a `LanguageModel`.
+
+## API route
+
+Create a Next.js App Router API route that streams a response using `streamText`:
+
+```typescript
+// app/api/chat/route.ts
+import { streamText } from "ai";
+import { portrix } from "@/lib/portrix";
+
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = await streamText({
+    model: portrix("anthropic/claude-3-5-sonnet"),
+    system: "You are a helpful assistant.",
+    messages,
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+<Note>
+  Set `maxDuration` to a value appropriate for your Vercel plan. Streaming responses from large models can take longer than the default 10-second function timeout on the Hobby plan.
+</Note>
+
+## useChat hook
+
+Create a client component that uses the `useChat` hook from `ai/react` to stream responses from your API route:
+
+```tsx
+// app/page.tsx
+"use client";
+
+import { useChat } from "ai/react";
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
+    useChat({ api: "/api/chat" });
+
+  return (
+    <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
+      <div className="flex-1 overflow-y-auto space-y-4">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`p-3 rounded-lg ${
+              message.role === "user"
+                ? "bg-blue-100 ml-auto max-w-sm"
+                : "bg-gray-100 max-w-prose"
+            }`}
+          >
+            <p className="text-sm font-semibold capitalize">{message.role}</p>
+            <p className="mt-1">{message.content}</p>
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
+        <input
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Ask anything..."
+          disabled={isLoading}
+          className="flex-1 border rounded-lg px-3 py-2"
+        />
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
+        >
+          Send
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+## Switching models
+
+Create multiple provider instances or select a model dynamically at runtime. This lets you route different request types to the most appropriate model:
+
+```typescript
+// lib/portrix.ts
+import { createOpenAI } from "@ai-sdk/openai";
+
+const portrix = createOpenAI({
+  baseURL: "https://api.portrix.ai/v1",
+  apiKey: process.env.PORTRIX_API_KEY,
+});
+
+// Pre-configured model references you can import directly
+export const fastModel = portrix("google/gemini-2.0-flash");
+export const smartModel = portrix("anthropic/claude-3-5-sonnet");
+export const codeModel = portrix("openai/gpt-4o");
+
+// Or select a model at runtime based on task type
+type TaskType = "summarise" | "code" | "chat";
+
+export function modelForTask(task: TaskType) {
+  const map: Record<TaskType, ReturnType<typeof portrix>> = {
+    summarise: fastModel,
+    code: codeModel,
+    chat: smartModel,
+  };
+  return map[task];
+}
+```
+
+Use `modelForTask` in your API route to route requests dynamically:
+
+```typescript
+// app/api/chat/route.ts
+import { streamText } from "ai";
+import { modelForTask } from "@/lib/portrix";
+
+export async function POST(req: Request) {
+  const { messages, task = "chat" } = await req.json();
+
+  const result = await streamText({
+    model: modelForTask(task),
+    messages,
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+## Streaming and UI
+
+All Vercel AI SDK streaming features — real-time token delivery, `useChat` state management, and `toDataStreamResponse()` — work with Portrix responses without any extra configuration. Portrix normalises every model's output to the OpenAI Server-Sent Events format, so the SDK's stream parser handles responses from Anthropic, Google, Mistral, and every other provider identically to native OpenAI responses.
+
+<Tip>
+  Define `PORTRIX_API_KEY` as a plain (non-`NEXT_PUBLIC_`) environment variable in your Vercel project settings. Vercel automatically makes non-prefixed variables available to server-side runtimes only, keeping your key out of the client bundle. You can set it under **Project Settings → Environment Variables** in the Vercel dashboard.
+</Tip>

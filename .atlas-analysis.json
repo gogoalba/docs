@@ -1,0 +1,113 @@
+{
+  "projectType": "saas",
+  "projectName": "Portrix",
+  "projectDescription": "Portrix is a unified AI gateway that routes requests to 400+ large language models through a single OpenAI-compatible API endpoint.",
+  "theme": "luma",
+  "primaryColor": "#6366F1",
+  "lightColor": "#818CF8",
+  "darkColor": "#4F46E5",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/gateway",
+              "concepts/models",
+              "concepts/routing",
+              "concepts/protocols"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/first-request",
+              "guides/model-selection",
+              "guides/fallbacks-and-load-balancing",
+              "guides/web-search",
+              "guides/streaming"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/openai-sdk",
+              "integrations/python",
+              "integrations/javascript",
+              "integrations/langchain",
+              "integrations/vercel-ai"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/providers",
+              "configuration/rate-limits",
+              "configuration/environment-variables"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "help/faq",
+              "help/troubleshooting",
+              "help/supported-models"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/authentication",
+              "api-reference/errors"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/chat-completions",
+              "api-reference/completions",
+              "api-reference/embeddings",
+              "api-reference/models"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Single API endpoint for 400+ LLMs",
+    "OpenAI-compatible API — drop-in replacement",
+    "Automatic model routing and fallbacks",
+    "Protocol conversion across providers",
+    "Managed web search integration",
+    "Streaming support",
+    "Agent-ready integrations",
+    "Unified authentication and billing"
+  ],
+  "publicApiSurface": [
+    "POST /v1/chat/completions",
+    "POST /v1/completions",
+    "POST /v1/embeddings",
+    "GET /v1/models",
+    "Authorization: Bearer <api-key>",
+    "x-portrix-model header",
+    "x-portrix-fallback header",
+    "x-portrix-route header"
+  ]
+}

@@ -1,0 +1,116 @@
+---
+title: "Common Questions About Using the Portrix AI Gateway"
+sidebarTitle: "FAQ"
+description: "Answers to common questions about Portrix — model access, pricing, compatibility, API keys, and migrating from OpenAI or other providers."
+---
+
+This page answers the most common questions about using Portrix. If you don't find what you're looking for here, reach out to our support team at [support@portrix.ai](mailto:support@portrix.ai) or use the in-dashboard chat.
+
+<AccordionGroup>
+  <Accordion title="Is Portrix a drop-in replacement for OpenAI?">
+    Yes. Portrix implements the OpenAI API specification, so any code that works with the OpenAI SDK or a direct HTTP client works with Portrix after two changes:
+
+    1. Set your base URL to `https://api.portrix.ai/v1` instead of `https://api.openai.com/v1`.
+    2. Replace your OpenAI API key with your Portrix API key.
+
+    That's it. Your existing prompt logic, parameter names, response parsing, and tool/function calling code all continue to work without modification. To use a non-OpenAI model, simply change the `model` field to a Portrix model ID like `anthropic/claude-3-5-sonnet`.
+  </Accordion>
+
+  <Accordion title="How many models does Portrix support?">
+    Portrix provides access to 400+ models from dozens of providers including OpenAI, Anthropic, Google, Mistral, Meta, Cohere, Groq, and more. The catalog is continuously updated as providers release new models.
+
+    You can retrieve the full, up-to-date list programmatically at any time:
+
+    ```bash
+    curl https://api.portrix.ai/v1/models \
+      -H "Authorization: Bearer YOUR_PORTRIX_KEY"
+    ```
+
+    See the [Supported Models](/help/supported-models) page for a curated overview of popular models.
+  </Accordion>
+
+  <Accordion title="Do I need API keys for each provider?">
+    No. When you sign up for Portrix, you immediately get access to all supported models through Portrix's shared provider keys — no separate accounts with OpenAI, Anthropic, or Google are required.
+
+    Optionally, you can add your own provider API keys in **Settings > Providers**. When you do, Portrix routes your requests through your accounts instead of the shared pool. This is useful if you have existing provider credits, prefer direct billing relationships, or need dedicated provider-level quota. See [Providers](/configuration/providers) for setup instructions.
+  </Accordion>
+
+  <Accordion title="How is Portrix billed?">
+    Portrix charges you based on the tokens you consume — input tokens plus output tokens — with pricing that varies by model and provider. Generally, smaller, faster models cost less per token than larger, more capable ones.
+
+    You can view current per-model pricing on the **Billing** page in the dashboard at [app.portrix.ai](https://app.portrix.ai). The Usage page shows your running token consumption and estimated cost for the current billing period.
+
+    If you add your own provider API keys, those requests are billed directly to you by the provider; Portrix charges only a platform fee for routing and features.
+  </Accordion>
+
+  <Accordion title="Can I use Portrix in production?">
+    Yes. Portrix is designed for production workloads. Paid plans (Pro and Enterprise) include:
+
+    - Uptime SLAs
+    - Priority support
+    - Higher rate limits and daily quotas
+    - Fallback routing to minimize downtime
+    - Audit logs and usage analytics
+
+    The Free plan is suitable for prototyping and low-volume testing. For production use, we recommend upgrading to Pro or Enterprise.
+  </Accordion>
+
+  <Accordion title="What happens if a provider goes down?">
+    Portrix's fallback routing lets you define a list of models to try in sequence. If the primary model returns a `5xx` error or times out, Portrix automatically retries the request with the next model in your fallback chain — transparently, with no changes required in your application code.
+
+    You configure fallback chains per request (using the `fallbacks` parameter) or as account-level defaults in the dashboard. You can also monitor provider status on the Portrix status page.
+  </Accordion>
+
+  <Accordion title="Does Portrix store my prompts?">
+    Portrix collects request logs for platform operations, debugging, and abuse prevention. By default, logs include metadata (model used, token counts, timestamps, error codes) but **not** the content of your messages.
+
+    Full content logging (storing your actual prompts and completions) is available as an opt-in feature for teams that want it for debugging or compliance purposes. It can also be explicitly disabled at the API key level. Portrix does not use your data to train or fine-tune any models. See the [Privacy Policy](https://portrix.ai/privacy) for complete details.
+  </Accordion>
+
+  <Accordion title="Can I use Portrix with LangChain, LlamaIndex, or other frameworks?">
+    Yes. Any framework or library that supports OpenAI-compatible APIs works with Portrix out of the box. This includes:
+
+    - **LangChain** — use `ChatOpenAI` with `openai_api_base="https://api.portrix.ai/v1"`
+    - **LlamaIndex** — configure `OpenAI` with a custom `api_base`
+    - **Instructor** — pass a patched OpenAI client pointing to Portrix
+    - **Vercel AI SDK** — use the `openai` provider with a custom base URL
+    - **AutoGen, CrewAI, and other agent frameworks** — configure the OpenAI client as usual
+
+    Because Portrix is API-compatible, you typically only need to set `base_url` and `api_key` on the underlying OpenAI client your framework uses.
+  </Accordion>
+
+  <Accordion title="What is the rate limit on the free plan?">
+    The Free plan includes 60 requests per minute (RPM) and 100,000 tokens per minute (TPM), with a daily token quota of 500,000 tokens.
+
+    For full details on limits across all plans and guidance on handling `429` errors, see the [Rate Limits](/configuration/rate-limits) page.
+  </Accordion>
+
+  <Accordion title="How do I report an issue or get support?">
+    You can reach the Portrix support team through any of these channels:
+
+    - **Email:** [support@portrix.ai](mailto:support@portrix.ai)
+    - **In-dashboard chat:** Click the chat bubble in the bottom-right corner of [app.portrix.ai](https://app.portrix.ai)
+
+    When reporting an API issue, include the `x-portrix-request-id` value from the response headers — this lets the support team locate your specific request in the logs and diagnose the problem much faster.
+  </Accordion>
+
+  <Accordion title="Can I self-host Portrix?">
+    Self-hosted deployment is available on the Enterprise plan. With a self-hosted deployment, the Portrix gateway runs in your own infrastructure (on-premises or your cloud account), giving you full data residency control and the ability to connect directly to provider APIs from your own network.
+
+    Contact [support@portrix.ai](mailto:support@portrix.ai) to discuss self-hosted options and Enterprise pricing.
+  </Accordion>
+
+  <Accordion title="What model should I use for embeddings?">
+    For most use cases, `openai/text-embedding-3-small` offers an excellent balance of performance and cost. If you need maximum embedding quality for complex semantic search or retrieval tasks, use `openai/text-embedding-3-large`.
+
+    Both models are available through Portrix and are called via the `/v1/embeddings` endpoint using the same OpenAI-compatible request format:
+
+    ```python
+    response = client.embeddings.create(
+        model="openai/text-embedding-3-small",
+        input="Your text to embed",
+    )
+    embedding = response.data[0].embedding
+    ```
+  </Accordion>
+</AccordionGroup>
