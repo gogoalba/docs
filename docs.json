@@ -16,7 +16,7 @@
           {
             "group": "Platform",
             "pages": [
-              "Platform/untitled-page",
+              "Platform/introduction",
               "Platform/quick-start",
               "Platform/use-cases"
             ]
@@ -69,14 +69,14 @@
           {
             "group": "Platform",
             "pages": [
-              "index-zh/Platform/untitled-page-2",
-              "index-zh/Platform/untitled-page"
+              "index-zh/Platform/start",
+              "index-zh/Platform/introduction"
             ]
           },
           {
             "group": "API",
             "pages": [
-              "index-zh/API/pipe-llm-pipe-llm-converter-api-converter-open-ai-chat-completions-v1-chat-completions-openai-v1-chat-completions-open-ai-open-ai-anthropic-gemini-converter-open-ai-responses-v1-responses-open-ai"
+              "index-zh/API/overview"
             ]
           }
         ]
