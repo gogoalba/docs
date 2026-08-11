@@ -81,7 +81,8 @@
               "index-zh/Portix平台/untitled-page"
             ]
           }
-        ]
+        ],
+        "default": true
       }
     ]
   },
