@@ -9,88 +9,23 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
-      {
-        "tab": "Documentation",
-        "groups": [
-          {
-            "group": "Get Started",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "authentication"
-            ]
-          },
-          {
-            "group": "Core Concepts",
-            "pages": [
-              "concepts/gateway",
-              "concepts/models",
-              "concepts/routing",
-              "concepts/protocols"
-            ]
-          },
-          {
-            "group": "Guides",
-            "pages": [
-              "guides/first-request",
-              "guides/model-selection",
-              "guides/fallbacks-and-load-balancing",
-              "guides/web-search",
-              "guides/streaming"
-            ]
-          },
-          {
-            "group": "Integrations",
-            "pages": [
-              "integrations/openai-sdk",
-              "integrations/python",
-              "integrations/javascript",
-              "integrations/langchain",
-              "integrations/vercel-ai"
-            ]
-          },
-          {
-            "group": "Configuration",
-            "pages": [
-              "configuration/providers",
-              "configuration/rate-limits",
-              "configuration/environment-variables"
-            ]
-          },
-          {
-            "group": "Help",
-            "pages": [
-              "help/faq",
-              "help/troubleshooting",
-              "help/supported-models"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api-reference/overview",
-              "api-reference/authentication",
-              "api-reference/errors"
-            ]
-          },
-          {
-            "group": "Endpoints",
-            "pages": [
-              "api-reference/chat-completions",
-              "api-reference/completions",
-              "api-reference/embeddings",
-              "api-reference/models"
-            ]
-          }
-        ]
-      }
-    ]
+    "global": {
+      "languages": [
+        {
+          "language": "zh-CN",
+          "href": ""
+        },
+        {
+          "language": "zh-Hans",
+          "href": ""
+        },
+        {
+          "language": "zh",
+          "href": ""
+        }
+      ]
+    },
+    "groups": []
   },
   "navbar": {
     "links": [
