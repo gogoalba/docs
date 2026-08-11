@@ -9,60 +9,57 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "global": {
-      "languages": [
-        {
-          "language": "zh-CN",
-          "href": ""
-        }
-      ]
-    },
     "languages": [
       {
         "language": "en",
-        "pages": [
-          "Platform/untitled-page",
-          "Platform/quick-start",
-          "Platform/use-cases"
-        ]
-      },
-      {
-        "language": "cn",
-        "pages": [
-          "Gateway API/overview",
-          "Gateway API/list-models",
-          "Gateway API/errors",
-          "Gateway API/routing-and-protocols",
-          "Gateway API/rate-limits",
+        "groups": [
           {
-            "group": "OpenAI",
+            "group": "Platform",
             "pages": [
-              "Gateway API/OpenAI/chat-completions",
-              "Gateway API/OpenAI/overview",
-              "Gateway API/OpenAI/responses"
+              "Platform/untitled-page",
+              "Platform/quick-start",
+              "Platform/use-cases"
             ]
           },
           {
-            "group": "Anthropic",
+            "group": "Gateway API",
             "pages": [
-              "Gateway API/Anthropic/messages",
-              "Gateway API/Anthropic/overview",
-              "Gateway API/Anthropic/tool-use"
+              "Gateway API/overview",
+              "Gateway API/list-models",
+              "Gateway API/routing-and-protocols",
+              "Gateway API/errors",
+              "Gateway API/rate-limits",
+              {
+                "group": "OpenAI",
+                "pages": [
+                  "Gateway API/OpenAI/chat-completions",
+                  "Gateway API/OpenAI/overview",
+                  "Gateway API/OpenAI/responses"
+                ]
+              },
+              {
+                "group": "Anthropic",
+                "pages": [
+                  "Gateway API/Anthropic/messages",
+                  "Gateway API/Anthropic/overview",
+                  "Gateway API/Anthropic/tool-use"
+                ]
+              },
+              {
+                "group": "Gemini",
+                "pages": [
+                  "Gateway API/Gemini/generate-content",
+                  "Gateway API/Gemini/overview"
+                ]
+              }
             ]
           },
           {
-            "group": "Gemini",
+            "group": "WebSearch",
             "pages": [
-              "Gateway API/Gemini/generate-content",
-              "Gateway API/Gemini/overview"
+              "WebSearch/overview"
             ]
           }
-        ]
-      },
-      {
-        "language": "zh",
-        "pages": [
-          "WebSearch/overview"
         ]
       },
       {
