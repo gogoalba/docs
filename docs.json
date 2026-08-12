@@ -24,32 +24,32 @@
           {
             "group": "Gateway API",
             "pages": [
-              "Gateway API/overview",
-              "Gateway API/list-models",
-              "Gateway API/routing-and-protocols",
-              "Gateway API/errors",
-              "Gateway API/rate-limits",
+              "Gateway-API/overview",
+              "Gateway-API/list-models",
+              "Gateway-API/routing-and-protocols",
+              "Gateway-API/errors",
+              "Gateway-API/rate-limits",
               {
                 "group": "OpenAI",
                 "pages": [
-                  "Gateway API/OpenAI/chat-completions",
-                  "Gateway API/OpenAI/overview",
-                  "Gateway API/OpenAI/responses"
+                  "Gateway-API/OpenAI/chat-completions",
+                  "Gateway-API/OpenAI/overview",
+                  "Gateway-API/OpenAI/responses"
                 ]
               },
               {
                 "group": "Anthropic",
                 "pages": [
-                  "Gateway API/Anthropic/messages",
-                  "Gateway API/Anthropic/overview",
-                  "Gateway API/Anthropic/tool-use"
+                  "Gateway-API/Anthropic/messages",
+                  "Gateway-API/Anthropic/overview",
+                  "Gateway-API/Anthropic/tool-use"
                 ]
               },
               {
                 "group": "Gemini",
                 "pages": [
-                  "Gateway API/Gemini/generate-content",
-                  "Gateway API/Gemini/overview"
+                  "Gateway-API/Gemini/generate-content",
+                  "Gateway-API/Gemini/overview"
                 ]
               }
             ]
@@ -69,8 +69,8 @@
           {
             "group": "Platform",
             "pages": [
-              "index-zh/Platform/start",
-              "index-zh/Platform/introduction"
+              "index-zh/Platform/introduction",
+              "index-zh/Platform/start"
             ]
           },
           {
