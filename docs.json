@@ -87,7 +87,7 @@
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "https://portix.ai/dashboard/overview"
+      "href": "https://portix.ai"
     }
   },
   "footer": {
