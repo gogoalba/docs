@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "luma",
+  "theme": "mint",
   "name": "Portrix docs",
   "colors": {
-    "primary": "#6366F1",
-    "light": "#818CF8",
-    "dark": "#4F46E5"
+    "primary": "#16A34A",
+    "light": "#16A34A",
+    "dark": "#07C983"
   },
   "favicon": "/favicon.svg",
   "navigation": {
