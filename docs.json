@@ -72,7 +72,8 @@
             "group": "Platform",
             "pages": [
               "index-zh/Platform/introduction",
-              "index-zh/Platform/start"
+              "index-zh/Platform/start",
+              "index-zh/Platform/use-cases"
             ]
           },
           {
