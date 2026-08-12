@@ -30,7 +30,7 @@ Same as text models:
   <Tab title="cURL">
     ```bash
     curl -s -X POST \
-      "https://api.portix.ai/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent" \
+      "https://portix.ai/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent" \
       -H "x-goog-api-key: $YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d @- << 'EOF'
@@ -106,7 +106,7 @@ Upload a reference image and generate a new one with text prompts:
     IMG_BASE64=$(base64 -w0 /path/to/cat_image.jpeg)
     
     curl -s -X POST \
-     "https://api.portix.ai/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent" \
+     "https://portix.ai/v1beta/models/gemini-3-pro-image-preview:streamGenerateContent" \
      -H "x-goog-api-key: $YOUR_API_KEY" \
       -H "Content-Type: application/json" \
       -d @- << EOF
@@ -135,7 +135,7 @@ Upload a reference image and generate a new one with text prompts:
     
     client = genai.Client(
       api_key=os.getenv('YOUR_API_KEY'),
-      http_options={'base_url': 'https://api.portix.ai'}
+      http_options={'base_url': 'https://portix.ai'}
     )
     
     image = Image.open('/path/to/cat_image.png')
@@ -163,7 +163,7 @@ Upload a reference image and generate a new one with text prompts:
     
     const ai = new GoogleGenAI({
     apiKey: process.env.YOUR_API_KEY,
-    httpOptions: { baseUrl: 'https://api.portix.ai' }
+    httpOptions: { baseUrl: 'https://portix.ai' }
     });
     
     const imageData = fs.readFileSync("cat_image.png");

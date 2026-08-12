@@ -15,7 +15,7 @@ title: "快速开始"
 <Tabs>
   <Tab title="OpenAI">
     ```bash
-    curl https://api.portix.ai/v1/chat/completions \
+    curl https://portix.ai/v1/chat/completions \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer YOUR_API_KEY" \
       -d '{
@@ -26,7 +26,7 @@ title: "快速开始"
   </Tab>
   <Tab title="Anthropic">
     ```bash
-    curl https://api.portix.ai/v1/messages \
+    curl https://portix.ai/v1/messages \
       -H "Content-Type: application/json" \
       -H "x-api-key: YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
@@ -39,7 +39,7 @@ title: "快速开始"
   </Tab>
   <Tab title="Gemini">
     ```bash
-    curl "https://api.portix.ai/v1beta/models/gemini-3-flash-preview:generateContent" \
+    curl "https://portix.ai/v1beta/models/gemini-3-flash-preview:generateContent" \
       -H "Content-Type: application/json" \
       -H "x-goog-api-key: $PIPELLM_API_KEY" \
       -d '{

@@ -7,7 +7,7 @@ OpenAI-compatible chat completions API
 ## Endpoint
 
 ```text
-POST https://api.portix.ai/v1/chat/completions
+POST https://portix.ai/v1/chat/completions
 ```
 
 <Note>
@@ -19,7 +19,7 @@ POST https://api.portix.ai/v1/chat/completions
 <Tabs>
   <Tab title="cURL">
     ```bash
-    curl https://api.portix.ai/v1/chat/completions \
+    curl https://portix.ai/v1/chat/completions \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer $YOUR_API_KEY" \
       -d '{
@@ -41,7 +41,7 @@ POST https://api.portix.ai/v1/chat/completions
     
     client = OpenAI(
       api_key=os.getenv('YOUR_API_KEY'),
-      base_url='https://api.portix.ai/v1'
+      base_url='https://portix.ai/v1'
     )
     
     response = client.chat.completions.create(
@@ -61,7 +61,7 @@ POST https://api.portix.ai/v1/chat/completions
     
     const client = new OpenAI({
       apiKey: process.env.YOUR_API_KEY,
-      baseURL: 'https://api.portix.ai/v1'
+      baseURL: 'https://portix.ai/v1'
     });
     
     const response = await client.chat.completions.create({
@@ -87,7 +87,7 @@ POST https://api.portix.ai/v1/chat/completions
     
     func main() {
       config := openai.DefaultConfig(os.Getenv("YOUR_API_KEY"))
-      config.BaseURL = "https://api.portix.ai/v1"
+      config.BaseURL = "https://portix.ai/v1"
       client := openai.NewClientWithConfig(config)
     
       resp, _ := client.CreateChatCompletion(

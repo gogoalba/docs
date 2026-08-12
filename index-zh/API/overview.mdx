@@ -15,7 +15,7 @@ Portix 同时提供原生公共路由和 converter 路由。这个部分用于�
 | Anthropic Messages | `/v1/messages` | `/anthropic/v1/messages` | 调 Anthropic 兼容平台时走原生路由；想保留 Anthropic 格式去调 OpenAI 或 Gemini 时走 converter。 |
 | Gemini Generate Content | `/v1beta/models/{model}:generateContent` | `/gemini/v1beta/models/{model}:generateContent` | 调 Gemini 平台时走原生路由；想保留 Gemini 格式去调 OpenAI 或 Anthropic 时走 converter。 |
 
-详细的协议路由规则和错误行为，请参考 [路由与协议](/guides/routing-protocols.zh)。
+详细的协议路由规则和错误行为，请参考 路由与协议。
 
 ## 认证
 
@@ -31,10 +31,10 @@ Portix 同时提供原生公共路由和 converter 路由。这个部分用于�
 
 | 路由类型 | Base URL |
 | --- | --- |
-| 原生公共路由 | `https://api.portix.ai` |
-| OpenAI converter | `https://api.portix.ai/openai/v1` |
-| Anthropic converter | `https://api.portix.ai/anthropic` |
-| Gemini converter | `https://api.portix.ai/gemini` |
+| 原生公共路由 | `https://portix.ai` |
+| OpenAI converter | `https://portix.ai/openai/v1` |
+| Anthropic converter | `https://portix.ai/anthropic` |
+| Gemini converter | `https://portix.ai/gemini` |
 
 ## 从这里开始
 

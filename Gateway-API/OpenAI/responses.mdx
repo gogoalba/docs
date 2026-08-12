@@ -7,7 +7,7 @@ OpenAI-compatible Responses API on PipeLLM
 ## Endpoint
 
 ```text
-POST https://api.portix.ai/v1/responses
+POST https://portix.ai/v1/responses
 ```
 
 <Note>
@@ -19,7 +19,7 @@ POST https://api.portix.ai/v1/responses
 <Tabs>
   <Tab title="cURL">
     ```bash
-    curl https://api.portix.ai/v1/responses \
+    curl https://portix.ai/v1/responses \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer $YOUR_API_KEY" \
       -d '{
@@ -35,7 +35,7 @@ POST https://api.portix.ai/v1/responses
     
     client = OpenAI(
       api_key=os.getenv("YOUR_API_KEY"),
-      base_url="https://api.portix.ai/v1"
+      base_url="https://portix.ai/v1"
     )
     
     response = client.responses.create(
@@ -52,7 +52,7 @@ POST https://api.portix.ai/v1/responses
     
     const client = new OpenAI({
       apiKey: process.env.YOUR_API_KEY,
-      baseURL: "https://api.portix.ai/v1",
+      baseURL: "https://portix.ai/v1",
     });
     
     const response = await client.responses.create({

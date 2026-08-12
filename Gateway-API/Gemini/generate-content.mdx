@@ -7,7 +7,7 @@ Gemini-compatible generateContent API on Portix
 ## Endpoint
 
 ```text
-POST https://api.portix.ai/v1beta/models/{model}:generateContent
+POST https://portix.ai/v1beta/models/{model}:generateContent
 ```
 
 <Note>
@@ -25,7 +25,7 @@ pip install google-genai
 <Tabs>
   <Tab title="cURL">
     ```bash
-    curl "https://api.portix.ai/v1beta/models/gemini-3-flash-preview:generateContent" \
+    curl "https://portix.ai/v1beta/models/gemini-3-flash-preview:generateContent" \
       -H "Content-Type: application/json" \
       -H "x-goog-api-key: $YOUR_API_KEY" \
       -d '{
@@ -47,7 +47,7 @@ pip install google-genai
     
     client = genai.Client(
       api_key=os.getenv('YOUR_API_KEY'),
-      http_options={'base_url': 'https://api.portix.ai'}
+      http_options={'base_url': 'https://portix.ai'}
     )
     
     response = client.models.generate_content(
@@ -65,7 +65,7 @@ pip install google-genai
     const ai = new GoogleGenAI({
       apiKey: process.env.YOUR_API_KEY,
       httpOptions: {
-        baseUrl: 'https://api.portix.ai'
+        baseUrl: 'https://portix.ai'
       }
     });
     
@@ -92,7 +92,7 @@ pip install google-genai
       ctx := context.Background()
       client, _ := genai.NewClient(ctx,
         option.WithAPIKey(os.Getenv("YOUR_API_KEY")),
-        option.WithEndpoint("https://api.portix.ai"),
+        option.WithEndpoint("https://portix.ai"),
       )
       defer client.Close()
     

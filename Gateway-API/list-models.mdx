@@ -11,7 +11,7 @@ For pricing, use [`/v1/models/pricing`](/api-reference/model-pricing).
 ## Endpoint
 
 ```text
-GET https://api.portix.ai/v1/models
+GET https://portix.ai/v1/models
 ```
 
 ## Authentication
@@ -36,7 +36,7 @@ Use a standard Portix API key header:
 <Tabs>
   <Tab title="cURL">
     ```bash
-    curl https://api.portix.ai/v1/models \
+    curl https://portix.ai/v1/models \
       -H "Authorization: Bearer $YOUR_API_KEY"
     ```
   </Tab>
@@ -46,7 +46,7 @@ Use a standard Portix API key header:
     import requests
     
     response = requests.get(
-        "https://api.portix.ai/v1/models",
+        "https://portix.ai/v1/models",
         headers={"Authorization": f"Bearer {os.getenv('YOUR_API_KEY')}"},
     )
     
@@ -59,7 +59,7 @@ Use a standard Portix API key header:
   </Tab>
   <Tab title="Node.js">
     ```javascript
-    const response = await fetch("https://api.portix.ai/v1/models", {
+    const response = await fetch("https://portix.ai/v1/models", {
       headers: {
         Authorization: `Bearer ${process.env.YOUR_API_KEY}`,
       },

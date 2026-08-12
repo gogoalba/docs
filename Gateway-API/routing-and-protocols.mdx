@@ -4,7 +4,7 @@ title: "Routing & Protocols"
 
 Portix exposes two kinds of public routes:
 
-- Native public routes on `https://api.portix.ai`
+- Native public routes on `https://portix.ai`
 - Converter routes under `/openai`, `/anthropic`, and `/gemini`
 
 Use a native route only when your request already matches the target protocol. Use a converter route when you want to keep one SDK format and call models from another protocol family.
@@ -30,12 +30,12 @@ Use a native route only when your request already matches the target protocol. U
 
 | Goal | Route to use |
 | --- | --- |
-| Keep OpenAI SDK, call Claude | `https://api.portix.ai/openai/v1/chat/completions` |
-| Keep OpenAI SDK, call Gemini | `https://api.portix.ai/openai/v1/chat/completions` |
-| Keep Anthropic SDK, call GPT | `https://api.portix.ai/anthropic/v1/messages` |
-| Keep Anthropic SDK, call Gemini | `https://api.portix.ai/anthropic/v1/messages` |
-| Keep Gemini SDK, call GPT | `https://api.portix.ai/gemini/v1beta/models/{model}:generateContent` |
-| Keep Gemini SDK, call Claude | `https://api.portix.ai/gemini/v1beta/models/{model}:generateContent` |
+| Keep OpenAI SDK, call Claude | `https://portix.ai/openai/v1/chat/completions` |
+| Keep OpenAI SDK, call Gemini | `https://portix.ai/openai/v1/chat/completions` |
+| Keep Anthropic SDK, call GPT | `https://portix.ai/anthropic/v1/messages` |
+| Keep Anthropic SDK, call Gemini | `https://portix.ai/anthropic/v1/messages` |
+| Keep Gemini SDK, call GPT | `https://portix.ai/gemini/v1beta/models/{model}:generateContent` |
+| Keep Gemini SDK, call Claude | `https://portix.ai/gemini/v1beta/models/{model}:generateContent` |
 
 ## Error Behavior
 

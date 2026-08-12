@@ -7,7 +7,7 @@ Anthropic-compatible Messages API on PipeLLM
 ## Endpoint
 
 ```text
-POST https://api.portix.ai/v1/messages
+POST https://portix.ai/v1/messages
 ```
 
 <Note>
@@ -39,7 +39,7 @@ POST https://api.portix.ai/v1/messages
 <Tabs>
   <Tab title="cURL">
     ```bash
-    curl https://api.portix.ai/v1/messages \
+    curl https://portix.ai/v1/messages \
       -H "Content-Type: application/json" \
       -H "x-api-key: $YOUR_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
@@ -61,7 +61,7 @@ POST https://api.portix.ai/v1/messages
     
     client = anthropic.Anthropic(
       api_key=os.getenv('YOUR_API_KEY'),
-      base_url='https://api.portix.ai'
+      base_url='https://portix.ai'
     )
     
     message = client.messages.create(
@@ -81,7 +81,7 @@ POST https://api.portix.ai/v1/messages
     
     const client = new Anthropic({
       apiKey: process.env.YOUR_API_KEY,
-      baseURL: 'https://api.portix.ai'
+      baseURL: 'https://portix.ai'
     });
     
     const message = await client.messages.create({
@@ -109,7 +109,7 @@ POST https://api.portix.ai/v1/messages
     func main() {
       client := anthropic.NewClient(
         option.WithAPIKey(os.Getenv("YOUR_API_KEY")),
-        option.WithBaseURL("https://api.portix.ai"),
+        option.WithBaseURL("https://portix.ai"),
       )
     
       message, _ := client.Messages.New(context.TODO(), anthropic.MessageNewParams{

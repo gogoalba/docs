@@ -54,7 +54,7 @@ Portix provides **native protocol conversion** at the gateway level. Your existi
     
     client = OpenAI(
         api_key="YOUR_API_KEY",
-        base_url="https://api.portix.ai/openai/v1"  # ← just change this
+        base_url="https://portix.ai/openai/v1"  # ← just change this
     )
     
     response = client.chat.completions.create(
@@ -70,7 +70,7 @@ Portix provides **native protocol conversion** at the gateway level. Your existi
     
     client = anthropic.Anthropic(
         api_key="YOUR_API_KEY",
-        base_url="https://api.portix.ai/anthropic"  # ← just change this
+        base_url="https://portix.ai/anthropic"  # ← just change this
     )
     
     message = client.messages.create(
@@ -87,7 +87,7 @@ Portix provides **native protocol conversion** at the gateway level. Your existi
     
     client = genai.Client(
         api_key="YOUR_API_KEY",
-        http_options={"base_url": "https://api.portix.ai/gemini"}  # ← just change this
+        http_options={"base_url": "https://portix.ai/gemini"}  # ← just change this
     )
     
     response = client.models.generate_content(
