@@ -58,9 +58,10 @@
             ]
           },
           {
-            "group": "WebSearch",
+            "group": "About",
             "pages": [
-              "WebSearch/overview"
+              "About/privacy-policy",
+              "About/user-agreement"
             ]
           }
         ]
@@ -80,6 +81,13 @@
             "group": "API",
             "pages": [
               "index-zh/API/overview"
+            ]
+          },
+          {
+            "group": "About",
+            "pages": [
+              "index-zh/About/privacy-policy",
+              "index-zh/About/user-agreement"
             ]
           }
         ]
